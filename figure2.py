@@ -3,7 +3,7 @@ import matplotlib
 import matplotlib.pyplot as plt
 from gaussian import gaussian
 
-scale = 0.105
+scale = 0.102
 
 matplotlib.rcParams.update({
     "figure.figsize": np.array([6.4, 6.4]) * scale,
