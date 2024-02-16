@@ -4,6 +4,8 @@ This repository contains the source files used to produce the figures in the art
 
 Devakumar, Dherik and Eidheim, Ole Christian (2024). Multidimensional Gabor-Like Filters Derived from Gaussian Functions on Logarithmic Frequency Axes.
 
+arXiv link: https://arxiv.org/abs/2402.09419.
+
 ## Dependencies
 
 - Python 3
