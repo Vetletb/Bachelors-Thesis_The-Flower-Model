@@ -14,7 +14,7 @@ n = np.array([n1, n2])
 
 sigma = 100.
 
-fig, axes = plt.subplots(1, 4)
+fig, axes = plt.subplots(1, 5)
 images = []
 
 extent = [-(N - 1) / 2, (N - 1) / 2, (N - 1) / 2, -(N - 1) / 2]
@@ -35,6 +35,12 @@ images.append(axes[3].imshow(spatial_domain.imag,
                              extent=extent))
 axes[3].set_title('Spatial domain,\nimaginary parts')
 
+images.append(axes[4].imshow(np.abs(spatial_domain),
+                             vmin=np.min([spatial_domain.real, spatial_domain.imag]),
+                             vmax=np.max([spatial_domain.real, spatial_domain.imag]),
+                             extent=extent))
+axes[4].set_title('Spatial domain,\nabsolute values')
+
 
 def onclick(event):
     if event.button == 1 and (event.inaxes == axes[0] or event.inaxes == axes[1]):
@@ -49,6 +55,8 @@ def onclick(event):
         images[2].set_clim(np.min([spatial_domain.real, spatial_domain.imag]), np.max([spatial_domain.real, spatial_domain.imag]))
         images[3].set_data(spatial_domain.imag)
         images[3].set_clim(np.min([spatial_domain.real, spatial_domain.imag]), np.max([spatial_domain.real, spatial_domain.imag]))
+        images[4].set_data(np.abs(spatial_domain))
+        images[4].set_clim(np.min(np.abs(spatial_domain)), np.max(np.abs(spatial_domain)))
 
         fig.canvas.draw()
         fig.canvas.flush_events()
