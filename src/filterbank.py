@@ -11,7 +11,8 @@ def get_filterbank(N: int, sigma: float, device: str) -> torch.Tensor:
     frequency_domain_sum = torch.tensor(frequency_domain_sum, device=device)
     filters = torch.tensor(filters.real, device=device)
 
-    filters = filters.view(85, -1)
+    filter_amount = filters.size(dim=0)
+    filters = filters.view(filter_amount, -1)
 
     filters_norm = torch.linalg.vector_norm(filters, dim=-1)
     filters_normalized = filters / filters_norm.view(-1, 1)
