@@ -15,19 +15,6 @@ BATCH_SIZE = 1
 loader = get_dataloader(path=PATH, batch_size=BATCH_SIZE, img_res=IMG_RES)
 images, labels = next(iter(loader))
 
-def image_to_tensor(file_name: str):
-    img = Image.open(file_name).convert('L')
-    transform = transforms.Compose([
-        transforms.Resize((32, 32)),
-        transforms.ToTensor()
-        ])
-
-    return transform(img)
-
-def unfold_img(img) -> torch.Tensor:
-    unfold = torch.nn.Unfold(kernel_size=(31, 31), padding=15)
-    return unfold(img)
-
 if(IMG_RES % 2 == 0):
     kernel_size = IMG_RES - 1
 else:
