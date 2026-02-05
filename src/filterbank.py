@@ -5,11 +5,11 @@ import torch
 def get_filterbank(N: int, sigma: float, device: str) -> torch.Tensor:
     filters, frequency_domain_sum = filterbank(N, sigma)
 
-    filters = filters.astype("complex64")
+    filters = filters.astype("float32")
     frequency_domain_sum = frequency_domain_sum.astype("float32")
 
     frequency_domain_sum = torch.tensor(frequency_domain_sum, device=device)
-    filters = torch.tensor(filters.real, device=device)
+    filters = torch.tensor(filters, device=device)
 
     filter_amount = filters.size(dim=0)
     filters = filters.view(filter_amount, -1)
