@@ -1,7 +1,6 @@
 from torchvision import transforms 
 from torchvision.datasets import ImageFolder
 from PIL import Image
-from external.filterbank import filterbank
 from src.cosine_similarity import cosine_similarity
 from src.data import get_dataloader
 from src.filterbank import get_filterbank
@@ -34,9 +33,12 @@ else:
     kernel_size = IMG_RES
 padding = (int) ((kernel_size - 1) / 2)
 
-unfolded_img = unfold_img(images)
+unfold = torch.nn.Unfold(kernel_size=(kernel_size, kernel_size), padding=padding)
+unfolded_img = unfold(images)
 
 arr1, arr2, frequency_domain_sum = filterbank()
+filter_normalized, frequency_domain_sum = get_filterbank(N=kernel_size, sigma=SIGMA)
+features = cosine_similarity(filter_normalized, unfolded_img, frequency_domain_sum)
 
 img = image_to_tensor("dataset/train/airplane/0000.jpg")
 
