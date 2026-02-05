@@ -6,6 +6,12 @@ from src.cosine_similarity import cosine_similarity
 from src.filterbank import get_filterbank
 import torch
 
+PATH = "dataset/train"
+IMG_RES = 32
+SIGMA = 20.
+BATCH_SIZE = 1
+
+
 def image_to_tensor(file_name: str):
     img = Image.open(file_name).convert('L')
     transform = transforms.Compose([
