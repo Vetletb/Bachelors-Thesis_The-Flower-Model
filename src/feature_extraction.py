@@ -37,4 +37,4 @@ filter = torch.Tensor(arr2[0].real)
 filter_norm = torch.linalg.vector_norm(filter)
 filter_normalized = filter / filter_norm
 
-features = cosine_similarity(filter_normalized, img, torch.Tensor(frequency_domain_sum))
+features = cosine_similarity(filter_normalized, unfolded_img, torch.Tensor(frequency_domain_sum))
