@@ -3,6 +3,7 @@ from torchvision.datasets import ImageFolder
 from PIL import Image
 from external.filterbank import filterbank
 from src.cosine_similarity import cosine_similarity
+from src.data import get_dataloader
 from src.filterbank import get_filterbank
 import torch
 
@@ -11,6 +12,8 @@ IMG_RES = 32
 SIGMA = 20.
 BATCH_SIZE = 1
 
+loader = get_dataloader(path=PATH, batch_size=BATCH_SIZE, img_res=IMG_RES)
+images, labels = next(iter(loader))
 
 def image_to_tensor(file_name: str):
     img = Image.open(file_name).convert('L')
