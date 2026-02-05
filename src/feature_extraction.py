@@ -14,6 +14,10 @@ def image_to_tensor(file_name: str):
 
     return transform(img)
 
+def unfold_img(img) -> torch.Tensor:
+    unfold = torch.nn.Unfold(kernel_size=(31, 31), padding=15)
+    return unfold(img)
+
 transform = transforms.Compose([
     transforms.Grayscale(num_output_channels=1),
     transforms.Resize((32, 32)),
@@ -22,6 +26,8 @@ transform = transforms.Compose([
 dataset = ImageFolder(root="dataset/train", transform=transform)
 loader = torch.utils.data.DataLoader(dataset, batch_size=1, shuffle=False)
 images, labels = next(iter(loader))
+
+unfolded_img = unfold_img(images)
 
 arr1, arr2, frequency_domain_sum = filterbank()
 
