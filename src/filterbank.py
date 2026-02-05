@@ -1,7 +1,7 @@
 from external.filterbank import filterbank
 import torch
 
-def get_filterbank(N: int, sigma: float) -> torch.Tensor:
+def get_filterbank(N: int, sigma: float, device: str) -> torch.Tensor:
     arr1, arr2, frequency_domain_sum = filterbank(N, sigma)
     arr1 = arr1.astype('complex64')
     arr2 = arr2.astype('complex64')

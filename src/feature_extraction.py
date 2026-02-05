@@ -1,10 +1,11 @@
 from torchvision import transforms 
-from torchvision.datasets import ImageFolder
 from PIL import Image
 from src.cosine_similarity import cosine_similarity
 from src.data import get_dataloader
 from src.filterbank import get_filterbank
 import torch
+
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 PATH = "dataset/train"
 IMG_RES = 32
@@ -36,14 +37,6 @@ padding = (int) ((kernel_size - 1) / 2)
 unfold = torch.nn.Unfold(kernel_size=(kernel_size, kernel_size), padding=padding)
 unfolded_img = unfold(images)
 
-arr1, arr2, frequency_domain_sum = filterbank()
-filter_normalized, frequency_domain_sum = get_filterbank(N=kernel_size, sigma=SIGMA)
+filter_normalized, frequency_domain_sum = get_filterbank(N=kernel_size, sigma=SIGMA, device=device)
 features = cosine_similarity(filter_normalized, unfolded_img, frequency_domain_sum)
-
-img = image_to_tensor("dataset/train/airplane/0000.jpg")
-
-filter = torch.Tensor(arr2[0].real)
-filter_norm = torch.linalg.vector_norm(filter)
-filter_normalized = filter / filter_norm
-
-features = cosine_similarity(filter_normalized, unfolded_img, torch.Tensor(frequency_domain_sum))
+extracted_img = features.reshape(BATCH_SIZE, 1, IMG_RES, IMG_RES)[0][0].cpu()
