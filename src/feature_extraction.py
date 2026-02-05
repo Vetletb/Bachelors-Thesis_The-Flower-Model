@@ -3,6 +3,7 @@ from torchvision.datasets import ImageFolder
 from PIL import Image
 from external.filterbank import filterbank
 from src.cosine_similarity import cosine_similarity
+from src.filterbank import get_filterbank
 import torch
 
 def image_to_tensor(file_name: str):

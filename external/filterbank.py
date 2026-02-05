@@ -3,9 +3,9 @@ import numpy as np
 # import matplotlib.pyplot as plt
 from external.gaussian import gaussian
 
-def filterbank():
+def filterbank(N: int, sigma: float) -> np.ndarray:
 
-    scale = 0.102
+    # scale = 0.102
 
     # matplotlib.rcParams.update({
     #     "figure.figsize": np.array([6.4, 6.4]) * scale,
@@ -16,15 +16,13 @@ def filterbank():
     #     "pgf.preamble": r"\usepackage{amsmath}"
     # })
 
-    np.set_printoptions(precision=2)
+    # np.set_printoptions(precision=2)
 
-    N = 31
     n1 = np.arange(N).reshape((-1, 1)).repeat(N, axis=1) - (N - 1) / 2
     n2 = n1.T
     n = np.array([n1, n2])
 
-    mu = np.array([20., 20.])
-    sigma = 20.
+    # mu = np.array([20., 20.])
 
     # plt.xticks(())
     # plt.yticks(())
