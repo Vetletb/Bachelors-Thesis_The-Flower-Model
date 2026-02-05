@@ -28,14 +28,11 @@ def unfold_img(img) -> torch.Tensor:
     unfold = torch.nn.Unfold(kernel_size=(31, 31), padding=15)
     return unfold(img)
 
-transform = transforms.Compose([
-    transforms.Grayscale(num_output_channels=1),
-    transforms.Resize((32, 32)),
-    transforms.ToTensor()
-    ])
-dataset = ImageFolder(root="dataset/train", transform=transform)
-loader = torch.utils.data.DataLoader(dataset, batch_size=1, shuffle=False)
-images, labels = next(iter(loader))
+if(IMG_RES % 2 == 0):
+    kernel_size = IMG_RES - 1
+else:
+    kernel_size = IMG_RES
+padding = (int) ((kernel_size - 1) / 2)
 
 unfolded_img = unfold_img(images)
 
