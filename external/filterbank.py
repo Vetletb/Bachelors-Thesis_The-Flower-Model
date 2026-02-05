@@ -1,7 +1,7 @@
 import numpy as np
 # import matplotlib
 # import matplotlib.pyplot as plt
-from gaussian import gaussian
+from external.gaussian import gaussian
 
 def filterbank():
 
@@ -41,7 +41,7 @@ def filterbank():
     # plt.imshow(np.fft.fftshift(np.fft.ifft2(np.fft.ifftshift(frequency_domain))).real)
     # plt.savefig(f'figure2-{0.:.2f}.pdf', bbox_inches='tight', pad_inches=.0)
 
-    filters = np.array([])
+    filter_list = []
 
     for theta in np.arange(0., np.pi / 2. + dtheta, dtheta):
         for r in np.arange(dr, dr * 7. + dr, dr):
@@ -49,6 +49,10 @@ def filterbank():
 
             # plt.imshow(np.fft.fftshift(np.fft.ifft2(np.fft.ifftshift(gaussian(n, r * np.array([np.cos(theta), np.sin(theta)]), sigma, True)))).real)
             # plt.savefig(f'figure2-{r:.2f}-{theta:.2f}.pdf', bbox_inches='tight', pad_inches=.0)
+
+            filter_list.append(filter)
+
+    filters = np.stack(filter_list, axis=0)
 
     for theta in np.arange(0., 2. * np.pi, dtheta):
         for r in np.arange(dr, dr * 8. + dr, dr):
