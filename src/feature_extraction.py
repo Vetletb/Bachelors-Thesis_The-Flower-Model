@@ -1,5 +1,3 @@
-from torchvision import transforms 
-from PIL import Image
 from src.cosine_similarity import cosine_similarity
 from src.data import get_dataloader
 from src.filterbank import get_filterbank
