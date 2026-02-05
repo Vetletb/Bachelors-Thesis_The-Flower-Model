@@ -7,8 +7,11 @@ def get_filterbank(N: int, sigma: float, device: str) -> torch.Tensor:
     filters = filters.astype('complex64')
     frequency_domain_sum = frequency_domain_sum.astype('float32')
 
-    frequency_domain_sum = torch.tensor(frequency_domain_sum)
-    filter = torch.tensor(filters[1].real)
-    filter_norm = torch.linalg.vector_norm(filter)
-    filter_normalized = filter / filter_norm
-    return filter_normalized, frequency_domain_sum
+    frequency_domain_sum = torch.tensor(frequency_domain_sum, device=device)
+    filters = torch.tensor(filters.real, device=device)
+
+    filters = filters.view(85, -1)
+    
+    filters_norm = torch.linalg.vector_norm(filters, dim=-1)
+    filters_normalized = filters / filters_norm.view(-1, 1)
+    return filters_normalized, frequency_domain_sum
