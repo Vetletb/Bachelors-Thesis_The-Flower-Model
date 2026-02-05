@@ -16,7 +16,7 @@ def filterbank(N: int, sigma: float) -> np.ndarray:
     #     "pgf.preamble": r"\usepackage{amsmath}"
     # })
 
-    # np.set_printoptions(precision=2)
+    np.set_printoptions(precision=2)
 
     n1 = np.arange(N).reshape((-1, 1)).repeat(N, axis=1) - (N - 1) / 2
     n2 = n1.T
@@ -34,22 +34,26 @@ def filterbank(N: int, sigma: float) -> np.ndarray:
     frequency_domain = gaussian(n, np.array([0., 0.]), sigma, True)
     frequency_domain_sum = frequency_domain
 
-    center_filter = np.fft.fftshift(np.fft.ifft2(np.fft.ifftshift(frequency_domain)))
-
-    # plt.imshow(np.fft.fftshift(np.fft.ifft2(np.fft.ifftshift(frequency_domain))).real)
-    # plt.savefig(f'figure2-{0.:.2f}.pdf', bbox_inches='tight', pad_inches=.0)
-
     filter_list = []
 
+
+    filter_list.append(np.stack(np.fft.fftshift(np.fft.ifft2(np.fft.ifftshift(frequency_domain)))))
+    # plt.imshow(arr1.real)
+    # plt.savefig(f'output/pdf/real/figure2-{0.:.2f}.pdf', bbox_inches='tight', pad_inches=.0)
+
+    # plt.imshow(arr1.imag)
+    # plt.savefig(f'output/pdf/imag/figure2-{0.:.2f}.pdf', bbox_inches='tight', pad_inches=.0)
+
+    
     for theta in np.arange(0., np.pi / 2. + dtheta, dtheta):
         for r in np.arange(dr, dr * 7. + dr, dr):
             filter = np.fft.fftshift(np.fft.ifft2(np.fft.ifftshift(gaussian(n, r * np.array([np.cos(theta), np.sin(theta)]), sigma, True))))
+            # plt.imshow(arr.real)
+            # plt.savefig(f'output/pdf/real/figure2-{r:.2f}-{theta:.2f}.pdf', bbox_inches='tight', pad_inches=.0)
 
-            # plt.imshow(np.fft.fftshift(np.fft.ifft2(np.fft.ifftshift(gaussian(n, r * np.array([np.cos(theta), np.sin(theta)]), sigma, True)))).real)
-            # plt.savefig(f'figure2-{r:.2f}-{theta:.2f}.pdf', bbox_inches='tight', pad_inches=.0)
-
+            # plt.imshow(arr.imag)
+            # plt.savefig(f'output/pdf/imag/figure2-{r:.2f}-{theta:.2f}.pdf', bbox_inches='tight', pad_inches=.0)
             filter_list.append(filter)
-
     filters = np.stack(filter_list, axis=0)
 
     for theta in np.arange(0., 2. * np.pi, dtheta):
@@ -57,6 +61,6 @@ def filterbank(N: int, sigma: float) -> np.ndarray:
             frequency_domain_sum += gaussian(n, r * np.array([np.cos(theta), np.sin(theta)]), sigma, True)
 
     # plt.imshow(frequency_domain_sum, vmin=0.)
-    # plt.savefig(f'figure2-sum.pdf', bbox_inches='tight', pad_inches=.0)
+    # plt.savefig(f'output/pdf/sum/figure2-sum.pdf', bbox_inches='tight', pad_inches=.0)
 
-    return center_filter, filters, frequency_domain_sum
+    return filters, frequency_domain_sum
