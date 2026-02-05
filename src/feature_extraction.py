@@ -9,6 +9,7 @@ PATH = "dataset/train"
 IMG_RES = 32
 SIGMA = 20.
 BATCH_SIZE = 1
+MAX_POOL_SIZE = 2
 
 loader = get_dataloader(path=PATH, batch_size=BATCH_SIZE, img_res=IMG_RES)
 images, labels = next(iter(loader))
@@ -25,3 +26,6 @@ unfolded_img = unfold(images)
 filter_normalized, frequency_domain_sum = get_filterbank(N=kernel_size, sigma=SIGMA, device=device)
 features = cosine_similarity(filter_normalized, unfolded_img, frequency_domain_sum)
 extracted_img = features.reshape(BATCH_SIZE, 1, IMG_RES, IMG_RES)[0][0].cpu()
+
+max_pool = torch.nn.MaxPool2d(kernel_size=MAX_POOL_SIZE)
+max_pooled_img = max_pool(features)
