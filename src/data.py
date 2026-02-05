@@ -9,5 +9,5 @@ def get_dataloader(path: str, batch_size: int, img_res: int) -> torch.utils.data
     transforms.ToTensor()
     ])
     dataset = ImageFolder(root=path, transform=transform)
-    loader = torch.utils.data.DataLoader(dataset, batch_size=batch_size, shuffle=False)
+    loader = torch.utils.data.DataLoader(dataset, batch_size=batch_size, shuffle=False, pin_memory=True)
     return loader
