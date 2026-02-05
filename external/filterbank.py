@@ -28,8 +28,10 @@ def filterbank(N: int, sigma: float) -> np.ndarray:
     # plt.yticks(())
     # plt.tight_layout(pad=0.0)
 
-    dr = 6.
-    dtheta = np.pi / 22.
+    radius = (N - 1) / 2
+    steps = radius / 4
+    dr = radius / steps
+    dtheta = np.arccos(1 - (dr**2/(2 * radius**2)))
 
     frequency_domain = gaussian(n, np.array([0., 0.]), sigma, True)
     frequency_domain_sum = frequency_domain
@@ -44,9 +46,8 @@ def filterbank(N: int, sigma: float) -> np.ndarray:
     # plt.imshow(arr1.imag)
     # plt.savefig(f'output/pdf/imag/figure2-{0.:.2f}.pdf', bbox_inches='tight', pad_inches=.0)
 
-    
     for theta in np.arange(0., np.pi / 2. + dtheta, dtheta):
-        for r in np.arange(dr, dr * 7. + dr, dr):
+        for r in np.arange(dr, dr * steps + dr, dr):
             filter = np.fft.fftshift(np.fft.ifft2(np.fft.ifftshift(gaussian(n, r * np.array([np.cos(theta), np.sin(theta)]), sigma, True))))
             # plt.imshow(arr.real)
             # plt.savefig(f'output/pdf/real/figure2-{r:.2f}-{theta:.2f}.pdf', bbox_inches='tight', pad_inches=.0)
