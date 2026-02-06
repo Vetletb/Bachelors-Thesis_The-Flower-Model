@@ -46,7 +46,7 @@ def filterbank(N: int, sigma: float) -> np.ndarray:
     # plt.imshow(arr1.imag)
     # plt.savefig(f'output/pdf/imag/figure2-{0.:.2f}.pdf', bbox_inches='tight', pad_inches=.0)
 
-    for theta in np.arange(0., np.pi / 2. + dtheta, dtheta):
+    for theta in np.arange(3 * np.pi / 2, 5 * np.pi / 2 + dtheta, dtheta):
         for r in np.arange(dr, dr * steps + dr, dr):
             filter = np.fft.fftshift(np.fft.ifft2(np.fft.ifftshift(gaussian(n, r * np.array([np.cos(theta), np.sin(theta)]), sigma, True))))
             # plt.imshow(arr.real)
