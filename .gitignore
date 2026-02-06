@@ -1,5 +1,4 @@
 dataset
 output
-.idea
 __pycache__
-external/__pycache__
+my_snapshot.pickle
