@@ -12,6 +12,4 @@ def cosine_similarity(
     patch_size = b.size(dim=-1)
     batch_size = b.size(dim=0)
 
-    return torch.matmul(a_normalized, b) / b_norm.view(
-        batch_size, 1, patch_size
-    )
+    return torch.matmul(a_normalized, b) / b_norm.view(batch_size, 1, patch_size)

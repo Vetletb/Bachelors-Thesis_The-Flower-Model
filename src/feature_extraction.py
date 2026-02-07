@@ -10,9 +10,9 @@ torch.cuda.memory._record_memory_history()
 
 # Constants
 PATH = "dataset/train"
-IMG_RES = 6
+IMG_RES = 32
 SIGMA = 20.0
-BATCH_SIZE = 1000
+BATCH_SIZE = 800
 
 # Producer consumer variables
 cv = threading.Condition()

@@ -2,6 +2,7 @@ from torchvision import transforms
 from torchvision.datasets import ImageFolder
 import torch
 
+
 def create_dataloader(
     path: str, batch_size: int, img_res: int
 ) -> torch.utils.data.DataLoader:
@@ -21,12 +22,14 @@ def create_dataloader(
     )
     return loader
 
+
 def save_result(result: torch.Tensor, index: int):
     torch.save(result, "output/extracted_features/" + str(index) + ".pt")
+
 
 def save_result_labels(labels: torch.Tensor, index: int):
     torch.save(labels, "output/labels/" + str(index) + ".pt")
 
+
 def save_labels(labels: list[str]):
     torch.save(labels, "output/classes.pt")
-
