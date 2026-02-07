@@ -2,7 +2,7 @@ from external.filterbank import filterbank
 import torch
 
 
-def get_filterbank(N: int, sigma: float, device: str) -> torch.Tensor:
+def create_filterbank(N: int, sigma: float, device: str) -> torch.Tensor:
     filters, frequency_domain_sum = filterbank(N, sigma)
 
     filters = filters.astype("float32")
