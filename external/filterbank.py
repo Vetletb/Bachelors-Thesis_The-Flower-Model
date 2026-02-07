@@ -66,14 +66,10 @@ def filterbank(N: int, sigma: float) -> np.ndarray:
 
     filters_list = []
 
-    print(filters.shape)
-
     filters_list.append(filters.real)
     filters_list.append(filters.imag)
     filters_list.append(filters.imag * -1)
 
     filters = np.vstack(filters_list)
-
-    print(filters.shape)
 
     return filters, frequency_domain_sum
