@@ -8,7 +8,6 @@ PATH = "dataset/train"
 IMG_RES = 32
 SIGMA = 20.0
 BATCH_SIZE = 1
-MAX_POOL_SIZE = 2
 
 # Select device to run tensors in: CPU or CUDA
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -41,7 +40,3 @@ for images, labels in loader:
     filter_amount = filters_normalized.size(dim=0)
     current_batch_size = features.size(dim=0)
     features = features.view(current_batch_size, filter_amount, IMG_RES, IMG_RES)
-
-    # Max pool extracted features before saving result
-    max_pool = torch.nn.MaxPool2d(kernel_size=MAX_POOL_SIZE)
-    max_pooled_img = max_pool(features)
