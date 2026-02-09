@@ -5,14 +5,11 @@ import torch
 import threading
 
 
-# Record GPU memory for performance testing
-torch.cuda.memory._record_memory_history()
-
 # Constants
-PATH = "dataset/train"
+PATH = "dataset/dataset"
 IMG_RES = 32
 SIGMA = 20.0
-BATCH_SIZE = 800
+BATCH_SIZE = 1400
 
 # Producer consumer variables
 cv = threading.Condition()
@@ -70,8 +67,12 @@ def feature_extractor():
             work_available = True
             cv.notify_all()
         del unfolded_img, features
-    done = True
+    with cv:
+        done = True
+        cv.notify_all()
 
+# Record GPU memory for performance testing
+torch.cuda.memory._record_memory_history()
 
 # Select device to run tensors in: CPU or CUDA
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
