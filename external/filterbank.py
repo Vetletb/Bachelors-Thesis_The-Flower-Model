@@ -57,9 +57,21 @@ def filterbank(N: int, sigma: float) -> np.ndarray:
             filter_list.append(filter)
     filters = np.stack(filter_list, axis=0)
 
+
     for theta in np.arange(0., 2. * np.pi, dtheta):
         for r in np.arange(dr, dr * 8. + dr, dr):
-            frequency_domain_sum += gaussian(n, r * np.array([np.cos(theta), np.sin(theta)]), sigma, True)
+            frequency_domain_sum += frequency_domain
+
+
+    frequency_domain_list = []
+    frequency_domain_list.append(frequency_domain)
+
+    for theta in np.arange(3 * np.pi / 2, 5 * np.pi / 2 + dtheta, dtheta):
+        for r in np.arange(dr, dr * steps + dr, dr):
+            frequency_domain = gaussian(n, r * np.array([np.cos(theta), np.sin(theta)]), sigma, True)
+            frequency_domain_list.append(frequency_domain)
+
+    frequency_domains = np.stack(frequency_domain_list)
 
     # plt.imshow(frequency_domain_sum, vmin=0.)
     # plt.savefig(f'output/pdf/sum/figure2-sum.pdf', bbox_inches='tight', pad_inches=.0)
@@ -73,4 +85,4 @@ def filterbank(N: int, sigma: float) -> np.ndarray:
 
     filters = np.vstack(filters_list)
 
-    return filters, frequency_domain_sum
+    return filters, frequency_domain_sum, frequency_domains
