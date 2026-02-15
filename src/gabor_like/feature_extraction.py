@@ -1,5 +1,5 @@
 from gabor_like._cosine_similarity import _cosine_similarity
-from gabor_like._data import _create_dataloader, _save_result, _save_result_labels
+from gabor_like._data import _create_dataloader, _save_result, _save_result_labels, _prepare_output_folder
 from gabor_like._filterbank import _create_filterbank
 import torch
 import threading
@@ -15,18 +15,20 @@ class FeatureExtractor:
 
         self.cv = threading.Condition()
 
+        _prepare_output_folder(self.output)
+
     def run(self):
         self.work_available = False
         self.done = False
         self.results = None
         self.result_labels = None
 
-        # Select device to run tensors in: CPU or CUDA
+        # Select device to run tensors on: CPU or CUDA
         device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
         # Record GPU memory for performance testing
-        if device.type == "cuda":
-            torch.cuda.memory._record_memory_history()
+        # if device.type == "cuda":
+        #     torch.cuda.memory._record_memory_history()
 
         # Calculate kernel/filter size, needs to be an odd number close to image size
         # Calculate padding necessary for unfolding
@@ -61,8 +63,8 @@ class FeatureExtractor:
         # Wait for consumer to finish writing
         consumer.join()
 
-        if device.type == "cuda":
-            torch.cuda.memory._dump_snapshot("my_snapshot.pickle")
+        # if device.type == "cuda":
+        #     torch.cuda.memory._dump_snapshot("my_snapshot.pickle")
 
     def _consumer(self):
         file_index = 0
@@ -76,8 +78,8 @@ class FeatureExtractor:
                 if not self.work_available and self.done:
                     break
 
-                # save_result(results, file_index)
-                # save_result_labels(result_labels, file_index)
+                _save_result(self.results, file_index, self.output)
+                _save_result_labels(self.result_labels, file_index, self.output)
 
                 self.work_available = False
                 print(file_index)
