@@ -1,7 +1,7 @@
 import torch
 
 
-def cosine_similarity(
+def _cosine_similarity(
     a_normalized: torch.Tensor, b: torch.Tensor, abs: torch.Tensor
 ) -> torch.Tensor:
     abs_flatten = abs.view(-1, 1)

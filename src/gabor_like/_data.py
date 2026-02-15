@@ -3,8 +3,8 @@ from torchvision.datasets import ImageFolder
 import torch
 
 
-def create_dataloader(
-    path: str, batch_size: int, img_res: int
+def _create_dataloader(
+    dataset: str, output: str, batch_size: int, img_res: int
 ) -> torch.utils.data.DataLoader:
     transform = transforms.Compose(
         [
@@ -13,9 +13,9 @@ def create_dataloader(
             transforms.ToTensor(),
         ]
     )
-    dataset = ImageFolder(root=path, transform=transform)
+    dataset = ImageFolder(root=dataset, transform=transform)
 
-    save_labels(dataset.classes)
+    # _save_labels(dataset.classes, output)
 
     loader = torch.utils.data.DataLoader(
         dataset, batch_size=batch_size, shuffle=False, pin_memory=True
@@ -23,13 +23,13 @@ def create_dataloader(
     return loader
 
 
-def save_result(result: torch.Tensor, index: int):
+def _save_result(result: torch.Tensor, index: int, path: str):
     torch.save(result, "output/extracted_features/" + str(index) + ".pt")
 
 
-def save_result_labels(labels: torch.Tensor, index: int):
+def _save_result_labels(labels: torch.Tensor, index: int, path: str):
     torch.save(labels, "output/labels/" + str(index) + ".pt")
 
 
-def save_labels(labels: list[str]):
+def _save_labels(labels: list[str], path: str):
     torch.save(labels, "output/classes.pt")

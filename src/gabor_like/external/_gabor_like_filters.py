@@ -1,10 +1,11 @@
 import numpy as np
+
 # import matplotlib
 # import matplotlib.pyplot as plt
-from external.gaussian import gaussian
+from gabor_like.external._gaussian import _gaussian
 
-def filterbank(N: int, sigma: float) -> np.ndarray:
 
+def _gabor_like_filters(N: int, sigma: float) -> np.ndarray:
     # scale = 0.102
 
     # matplotlib.rcParams.update({
@@ -31,15 +32,16 @@ def filterbank(N: int, sigma: float) -> np.ndarray:
     radius = (N - 1) / 2
     steps = radius / 4
     dr = radius / steps
-    dtheta = np.arccos(1 - (dr**2/(2 * radius**2)))
+    dtheta = np.arccos(1 - (dr**2 / (2 * radius**2)))
 
-    frequency_domain = gaussian(n, np.array([0., 0.]), sigma, True)
+    frequency_domain = _gaussian(n, np.array([0.0, 0.0]), sigma, True)
     frequency_domain_sum = frequency_domain
 
     filter_list = []
 
-
-    filter_list.append(np.stack(np.fft.fftshift(np.fft.ifft2(np.fft.ifftshift(frequency_domain)))))
+    filter_list.append(
+        np.stack(np.fft.fftshift(np.fft.ifft2(np.fft.ifftshift(frequency_domain))))
+    )
     # plt.imshow(arr1.real)
     # plt.savefig(f'output/pdf/real/figure2-{0.:.2f}.pdf', bbox_inches='tight', pad_inches=.0)
 
@@ -48,7 +50,15 @@ def filterbank(N: int, sigma: float) -> np.ndarray:
 
     for theta in np.arange(3 * np.pi / 2, 5 * np.pi / 2 + dtheta, dtheta):
         for r in np.arange(dr, dr * steps + dr, dr):
-            filter = np.fft.fftshift(np.fft.ifft2(np.fft.ifftshift(gaussian(n, r * np.array([np.cos(theta), np.sin(theta)]), sigma, True))))
+            filter = np.fft.fftshift(
+                np.fft.ifft2(
+                    np.fft.ifftshift(
+                        _gaussian(
+                            n, r * np.array([np.cos(theta), np.sin(theta)]), sigma, True
+                        )
+                    )
+                )
+            )
             # plt.imshow(arr.real)
             # plt.savefig(f'output/pdf/real/figure2-{r:.2f}-{theta:.2f}.pdf', bbox_inches='tight', pad_inches=.0)
 
@@ -57,18 +67,18 @@ def filterbank(N: int, sigma: float) -> np.ndarray:
             filter_list.append(filter)
     filters = np.stack(filter_list, axis=0)
 
-
-    for theta in np.arange(0., 2. * np.pi, dtheta):
-        for r in np.arange(dr, dr * 8. + dr, dr):
+    for theta in np.arange(0.0, 2.0 * np.pi, dtheta):
+        for r in np.arange(dr, dr * 8.0 + dr, dr):
             frequency_domain_sum += frequency_domain
-
 
     frequency_domain_list = []
     frequency_domain_list.append(frequency_domain)
 
     for theta in np.arange(3 * np.pi / 2, 5 * np.pi / 2 + dtheta, dtheta):
         for r in np.arange(dr, dr * steps + dr, dr):
-            frequency_domain = gaussian(n, r * np.array([np.cos(theta), np.sin(theta)]), sigma, True)
+            frequency_domain = _gaussian(
+                n, r * np.array([np.cos(theta), np.sin(theta)]), sigma, True
+            )
             frequency_domain_list.append(frequency_domain)
 
     frequency_domains = np.stack(frequency_domain_list)
@@ -79,9 +89,9 @@ def filterbank(N: int, sigma: float) -> np.ndarray:
     filters_list = []
 
     filters_list.append(filters.real)
-    filters_list.append(filters.real * - 1)
+    filters_list.append(filters.real * -1)
     filters_list.append(filters.imag)
-    filters_list.append(filters.imag * - 1)
+    filters_list.append(filters.imag * -1)
 
     filters = np.vstack(filters_list)
 

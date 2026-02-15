@@ -1,9 +1,9 @@
-from external.filterbank import filterbank
+from gabor_like.external._gabor_like_filters import _gabor_like_filters
 import torch
 
 
-def create_filterbank(N: int, sigma: float, device: str) -> torch.Tensor:
-    filters, frequency_domain_sum = filterbank(N, sigma)
+def _create_filterbank(N: int, sigma: float, device: str) -> torch.Tensor:
+    filters, frequency_domain_sum, frequency_domains = _gabor_like_filters(N, sigma)
 
     filters = filters.astype("float32")
     frequency_domain_sum = frequency_domain_sum.astype("float32")
