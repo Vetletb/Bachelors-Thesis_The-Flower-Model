@@ -8,8 +8,6 @@ SPH_KMEANS_ITERS = 1000
 def _create_filterbank(N: int, sigma: float, k: int, device: str) -> torch.Tensor:
     filters, abs_filters, sum_abs_filters = _gabor_like_filters(N, sigma)
 
-    print(filters.shape)
-
     filters = filters.astype("complex64")
     abs_filters = abs_filters.astype("float32")
     sum_abs_filters = sum_abs_filters.astype("float32")
@@ -43,5 +41,4 @@ def _create_filterbank(N: int, sigma: float, k: int, device: str) -> torch.Tenso
 
     filters_normalized = normalize(filters, dim=1)
 
-    print(filters_normalized.shape)
     return filters_normalized, sum_abs_filters
