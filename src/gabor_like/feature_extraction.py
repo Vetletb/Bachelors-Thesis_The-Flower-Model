@@ -6,11 +6,12 @@ import threading
 
 
 class FeatureExtractor:
-    def __init__(self, dataset: str, output: str, img_res: int, sigma: float, batch_size: int):
+    def __init__(self, dataset: str, output: str, img_res: int, sigma: float, k: int, batch_size: int):
         self.dataset = dataset
         self.output = output
         self.img_res = img_res
         self.sigma = sigma
+        self.k = k
         self.batch_size = batch_size
 
         self.cv = threading.Condition()
@@ -40,7 +41,7 @@ class FeatureExtractor:
 
         # Get the filters as tensors
         self.filters_normalized, self.frequency_domain_sum = _create_filterbank(
-            N=kernel_size, sigma=self.sigma, device=device
+            N=kernel_size, sigma=self.sigma, k = self.k, device=device
         )
 
         # Create image unfolder
