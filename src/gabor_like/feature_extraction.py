@@ -1,12 +1,25 @@
 from gabor_like._cosine_similarity import _cosine_similarity
-from gabor_like._data import _create_dataloader, _save_result, _save_result_labels, _prepare_output_folder
+from gabor_like._data import (
+    _create_dataloader,
+    _save_result,
+    _save_result_labels,
+    _prepare_output_folder,
+)
 from gabor_like._filterbank import _create_filterbank
 import torch
 import threading
 
 
 class FeatureExtractor:
-    def __init__(self, dataset: str, output: str, img_res: int, sigma: float, k: int, batch_size: int):
+    def __init__(
+        self,
+        dataset: str,
+        output: str,
+        img_res: int,
+        sigma: float,
+        k: int,
+        batch_size: int,
+    ):
         self.dataset = dataset
         self.output = output
         self.img_res = img_res
@@ -41,7 +54,7 @@ class FeatureExtractor:
 
         # Get the filters as tensors
         self.filters_normalized, self.frequency_domain_sum = _create_filterbank(
-            N=kernel_size, sigma=self.sigma, k = self.k, device=device
+            N=kernel_size, sigma=self.sigma, k=self.k, device=device
         )
 
         # Create image unfolder
@@ -51,7 +64,10 @@ class FeatureExtractor:
 
         # Get a DataLoader object and iterate through the batches
         self.loader = _create_dataloader(
-            dataset=self.dataset, output=self.output, batch_size=self.batch_size, img_res=self.img_res
+            dataset=self.dataset,
+            output=self.output,
+            batch_size=self.batch_size,
+            img_res=self.img_res,
         )
 
         # Create consumer for writing results

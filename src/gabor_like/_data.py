@@ -6,6 +6,7 @@ import os
 FEATURES_FOLDER = "extracted_features"
 LABEL_RESULTS_FOLDER = "labels"
 
+
 def _prepare_output_folder(path: str):
     features_path = os.path.join(path, FEATURES_FOLDER)
     labels_path = os.path.join(path, LABEL_RESULTS_FOLDER)

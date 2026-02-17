@@ -1,6 +1,7 @@
 import torch
 from torch.nn.functional import normalize
 
+
 def _spherical_kmeans(k: int, vectors: torch.Tensor, max_iters: int) -> torch.Tensor:
     vector_amount = vectors.size(dim=0)
     centroid_indexes = torch.randperm(vector_amount)[:k]
@@ -25,7 +26,7 @@ def _spherical_kmeans(k: int, vectors: torch.Tensor, max_iters: int) -> torch.Te
             centroid_list.append(centroid)
         centroids = torch.stack(centroid_list)
         centroids = normalize(centroids, dim=1)
-        
+
         iter += 1
 
     cos_sim = vectors @ centroids.T

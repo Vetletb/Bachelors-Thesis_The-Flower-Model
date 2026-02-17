@@ -5,6 +5,7 @@ from torch.nn.functional import normalize
 
 SPH_KMEANS_ITERS = 1000
 
+
 def _create_filterbank(N: int, sigma: float, k: int, device: str) -> torch.Tensor:
     filters, abs_filters, sum_abs_filters = _gabor_like_filters(N, sigma)
 
@@ -26,7 +27,7 @@ def _create_filterbank(N: int, sigma: float, k: int, device: str) -> torch.Tenso
     for i in range(k):
         filters_in_cluster = filters[labels == i]
         max_filter_real = torch.amax(filters_in_cluster.real, dim=0)
-        max_filter_imag = torch.amax(filters_in_cluster.imag, dim=0)  
+        max_filter_imag = torch.amax(filters_in_cluster.imag, dim=0)
         max_filter_list.append(max_filter_real)
         max_filter_list.append(max_filter_imag)
 
