@@ -26,6 +26,8 @@ def _create_filterbank(N: int, sigma: float, k: int, device: str) -> torch.Tenso
     max_filter_list = []
     for i in range(k):
         filters_in_cluster = filters[labels == i]
+        if filters_in_cluster.size() == 0:
+            continue
         max_filter_real = torch.amax(filters_in_cluster.real, dim=0)
         max_filter_imag = torch.amax(filters_in_cluster.imag, dim=0)
         max_filter_list.append(max_filter_real)
