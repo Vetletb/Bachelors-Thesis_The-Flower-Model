@@ -15,8 +15,8 @@ def _prepare_output_folder(path: str):
 
 
 def _create_dataloader(
-    dataset: str, output: str, batch_size: int, img_res: int
-) -> torch.utils.data.DataLoader:
+    dataset: str, batch_size: int, img_res: int
+) -> tuple[torch.utils.data.DataLoader, list[str], int]:
     transform = transforms.Compose(
         [
             transforms.Grayscale(num_output_channels=1),
@@ -26,12 +26,10 @@ def _create_dataloader(
     )
     dataset = ImageFolder(root=dataset, transform=transform)
 
-    _save_labels(dataset.classes, output)
-
     loader = torch.utils.data.DataLoader(
         dataset, batch_size=batch_size, shuffle=False, pin_memory=True
     )
-    return loader
+    return loader, dataset.classes, len(dataset)
 
 
 def _save_result(result: torch.Tensor, index: int, path: str):
