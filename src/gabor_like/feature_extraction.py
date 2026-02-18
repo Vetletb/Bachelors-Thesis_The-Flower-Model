@@ -48,7 +48,7 @@ class FeatureExtractor:
 
         # Record GPU memory for performance testing
         # if device.type == "cuda":
-            # torch.cuda.memory._record_memory_history()
+        #    torch.cuda.memory._record_memory_history()
 
         # Create consumer for writing results
         consumer = threading.Thread(target=self._consumer_disk, daemon=True)
@@ -61,7 +61,7 @@ class FeatureExtractor:
         consumer.join()
 
         # if device.type == "cuda":
-            # torch.cuda.memory._dump_snapshot("my_snapshot.pickle")
+        #   torch.cuda.memory._dump_snapshot("my_snapshot.pickle")
 
     def extract_to_tensor(self):
         self._setup()
@@ -83,7 +83,7 @@ class FeatureExtractor:
 
         # Record GPU memory for performance testing
         # if device.type == "cuda":
-            # torch.cuda.memory._record_memory_history()
+        #    torch.cuda.memory._record_memory_history()
 
         # Create consumer for writing results
         consumer = threading.Thread(target=self._consumer_tensor, daemon=True)
@@ -96,7 +96,7 @@ class FeatureExtractor:
         consumer.join()
 
         # if device.type == "cuda":
-            # torch.cuda.memory._dump_snapshot("my_snapshot.pickle")
+        #   torch.cuda.memory._dump_snapshot("my_snapshot.pickle")
 
         return self.results_tensor, self.result_label_tensor
 
