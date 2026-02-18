@@ -29,7 +29,7 @@ def _create_dataloader(
     loader = torch.utils.data.DataLoader(
         dataset, batch_size=batch_size, shuffle=False, pin_memory=True
     )
-    return loader, dataset.classes, dataset.__len__()
+    return loader, dataset.classes, len(dataset)
 
 
 def _save_result(result: torch.Tensor, index: int, path: str):
