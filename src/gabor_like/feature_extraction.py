@@ -124,13 +124,11 @@ class FeatureExtractor:
             kernel_size=(kernel_size, kernel_size), padding=padding
         )
 
-        
     def _consumer_disk(self):
         file_index = 0
 
         while True:
             with self.cv:
-                print()
                 while not self.work_available and not self.done:
                     self.cv.wait()
 
@@ -169,7 +167,6 @@ class FeatureExtractor:
                 batch_index += 1
 
                 self.cv.notify_all()
-
 
     def _producer(self, device):
         for images, labels in self.loader:
