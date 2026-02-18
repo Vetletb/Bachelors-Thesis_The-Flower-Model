@@ -1,0 +1,102 @@
+import numpy as np
+
+# import matplotlib
+# import matplotlib.pyplot as plt
+from gabor_like.external._gaussian import _gaussian
+
+
+def _gabor_like_filters(N: int, sigma: float) -> np.ndarray:
+    # scale = 0.102
+
+    # matplotlib.rcParams.update({
+    #     "figure.figsize": np.array([6.4, 6.4]) * scale,
+    #     'lines.markersize': matplotlib.rcParams["lines.markersize"] * scale * 2.,
+    #     "font.family": "serif",
+    #     "text.usetex": True,
+    #     "pgf.rcfonts": False,
+    #     "pgf.preamble": r"\usepackage{amsmath}"
+    # })
+
+    np.set_printoptions(precision=2)
+
+    n1 = np.arange(N).reshape((-1, 1)).repeat(N, axis=1) - (N - 1) / 2
+    n2 = n1.T
+    n = np.array([n1, n2])
+
+    # mu = np.array([20., 20.])
+
+    # plt.xticks(())
+    # plt.yticks(())
+    # plt.tight_layout(pad=0.0)
+
+    radius = (N - 1) / 2
+    dr = radius / 50
+    steps = radius / dr
+    dtheta = np.arccos(1 - (dr**2 / (2 * radius**2)))
+
+    frequency_domain = _gaussian(n, np.array([0.0, 0.0]), sigma, True)
+    # frequency_domain_sum = frequency_domain
+
+    filter_list = []
+
+    filter_list.append(
+        np.stack(np.fft.fftshift(np.fft.ifft2(np.fft.ifftshift(frequency_domain))))
+    )
+
+    # plt.imshow(arr1.real)
+    # plt.savefig(f'output/pdf/real/figure2-{0.:.2f}.pdf', bbox_inches='tight', pad_inches=.0)
+
+    # plt.imshow(arr1.imag)
+    # plt.savefig(f'output/pdf/imag/figure2-{0.:.2f}.pdf', bbox_inches='tight', pad_inches=.0)
+
+    for theta in np.arange(3 * np.pi / 2, 5 * np.pi / 2 + dtheta, dtheta):
+        for r in np.arange(dr, dr * steps + dr, dr):
+            filter = np.fft.fftshift(
+                np.fft.ifft2(
+                    np.fft.ifftshift(
+                        _gaussian(
+                            n, r * np.array([np.cos(theta), np.sin(theta)]), sigma, True
+                        )
+                    )
+                )
+            )
+            # plt.imshow(arr.real)
+            # plt.savefig(f'output/pdf/real/figure2-{r:.2f}-{theta:.2f}.pdf', bbox_inches='tight', pad_inches=.0)
+
+            # plt.imshow(arr.imag)
+            # plt.savefig(f'output/pdf/imag/figure2-{r:.2f}-{theta:.2f}.pdf', bbox_inches='tight', pad_inches=.0)
+            filter_list.append(filter)
+    filters = np.stack(filter_list, axis=0)
+
+    abs_filters = np.abs(filters)
+    sum_abs_filters = np.sum(abs_filters)
+
+    # for theta in np.arange(0.0, 2.0 * np.pi, dtheta):
+    #     for r in np.arange(dr, dr * 8.0 + dr, dr):
+    #         frequency_domain_sum += frequency_domain
+
+    # frequency_domain_list = []
+    # frequency_domain_list.append(frequency_domain)
+
+    # for theta in np.arange(3 * np.pi / 2, 5 * np.pi / 2 + dtheta, dtheta):
+    #     for r in np.arange(dr, dr * steps + dr, dr):
+    #         frequency_domain = _gaussian(
+    #             n, r * np.array([np.cos(theta), np.sin(theta)]), sigma, True
+    #         )
+    #         frequency_domain_list.append(frequency_domain)
+
+    # frequency_domains = np.stack(frequency_domain_list)
+
+    # plt.imshow(frequency_domain_sum, vmin=0.)
+    # plt.savefig(f'output/pdf/sum/figure2-sum.pdf', bbox_inches='tight', pad_inches=.0)
+
+    # filters_list = []
+
+    # filters_list.append(filters.real)
+    # filters_list.append(filters.real * -1)
+    # filters_list.append(filters.imag)
+    # filters_list.append(filters.imag * -1)
+
+    # filters = np.vstack(filters_list)
+
+    return filters, abs_filters, sum_abs_filters
