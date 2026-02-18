@@ -63,7 +63,7 @@ class FeatureExtractor:
         # if device.type == "cuda":
         #   torch.cuda.memory._dump_snapshot("my_snapshot.pickle")
 
-    def extract_to_tensor(self):
+    def extract_to_tensor(self) -> tuple[torch.Tensor, torch.Tensor, list[str]]:
         self._setup()
 
         # Get a DataLoader object and information about the dataset
@@ -98,7 +98,7 @@ class FeatureExtractor:
         # if device.type == "cuda":
         #   torch.cuda.memory._dump_snapshot("my_snapshot.pickle")
 
-        return self.results_tensor, self.result_label_tensor
+        return self.results_tensor, self.result_label_tensor, classes
 
     def _setup(self):
         self.work_available = False
