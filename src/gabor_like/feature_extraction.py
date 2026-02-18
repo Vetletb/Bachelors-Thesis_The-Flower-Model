@@ -79,7 +79,7 @@ class FeatureExtractor:
             self.img_res,
             self.img_res
         ))
-        self.result_label_tensor = torch.empty(samples_len)
+        self.result_label_tensor = torch.empty(samples_len, dtype=torch.long)
 
         # Record GPU memory for performance testing
         # if device.type == "cuda":
