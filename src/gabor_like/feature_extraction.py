@@ -4,7 +4,7 @@ from gabor_like._data import (
     _save_result,
     _save_result_labels,
     _prepare_output_folder,
-    _save_labels
+    _save_labels,
 )
 from gabor_like._filterbank import _create_filterbank
 import torch
@@ -73,12 +73,14 @@ class FeatureExtractor:
             img_res=self.img_res,
         )
 
-        self.results_tensor = torch.empty((
-            samples_len,
-            self.filters_normalized.size(dim=0),
-            self.img_res,
-            self.img_res
-        ))
+        self.results_tensor = torch.empty(
+            (
+                samples_len,
+                self.filters_normalized.size(dim=0),
+                self.img_res,
+                self.img_res,
+            )
+        )
         self.result_label_tensor = torch.empty(samples_len, dtype=torch.long)
 
         # Record GPU memory for performance testing
@@ -156,10 +158,14 @@ class FeatureExtractor:
 
                 if not self.work_available and self.done:
                     break
-                
+
                 batch_size = self.results.size(dim=0)
-                self.results_tensor[write_offset:write_offset + batch_size] = self.results
-                self.result_label_tensor[write_offset:write_offset + batch_size] = self.result_labels
+                self.results_tensor[write_offset : write_offset + batch_size] = (
+                    self.results
+                )
+                self.result_label_tensor[write_offset : write_offset + batch_size] = (
+                    self.result_labels
+                )
                 write_offset += batch_size
 
                 self.work_available = False
