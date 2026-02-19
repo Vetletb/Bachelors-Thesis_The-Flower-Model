@@ -10,8 +10,8 @@ def _spherical_kmeans(k: int, vectors: torch.Tensor, max_iters: int) -> torch.Te
     vectors = normalize(vectors, dim=1)
     centroids = normalize(centroids, dim=1)
 
-    iter = 0
-    while iter <= max_iters:
+    iter_idx = 0
+    while iter_idx < max_iters:
         cos_sim = vectors @ centroids.T
         labels = torch.argmax(cos_sim, dim=1)
 
@@ -19,7 +19,7 @@ def _spherical_kmeans(k: int, vectors: torch.Tensor, max_iters: int) -> torch.Te
         for i in range(k):
             vec_in_cluster = vectors[labels == i]
 
-            if vec_in_cluster.size() == 0:
+            if vec_in_cluster.size(dim=0) == 0:
                 centroid = centroids[i]
             else:
                 centroid = torch.mean(vec_in_cluster, dim=0)
@@ -27,7 +27,7 @@ def _spherical_kmeans(k: int, vectors: torch.Tensor, max_iters: int) -> torch.Te
         centroids = torch.stack(centroid_list)
         centroids = normalize(centroids, dim=1)
 
-        iter += 1
+        iter_idx += 1
 
     cos_sim = vectors @ centroids.T
     labels = torch.argmax(cos_sim, dim=1)
