@@ -30,7 +30,7 @@ def _gabor_like_filters(N: int, sigma: float) -> np.ndarray:
     # plt.tight_layout(pad=0.0)
 
     radius = (N - 1) / 2
-    dr = radius / 50
+    dr = radius / 20
     steps = radius / dr
     dtheta = np.arccos(1 - (dr**2 / (2 * radius**2)))
 
