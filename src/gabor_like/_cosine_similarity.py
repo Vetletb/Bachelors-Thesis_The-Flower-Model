@@ -28,8 +28,6 @@ def _cosine_similarity(
         cos_sim = current_filters @ b
         cos_sim_list.append(cos_sim)
         
-
     cos_sim = torch.hstack(cos_sim_list)
-    print(cos_sim.shape)
 
-    return 0
+    return cos_sim
