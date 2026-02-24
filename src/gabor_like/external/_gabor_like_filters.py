@@ -68,9 +68,6 @@ def _gabor_like_filters(N: int, sigma: float) -> np.ndarray:
             filter_list.append(filter)
     filters = np.stack(filter_list, axis=0)
 
-    abs_filters = np.abs(filters)
-    sum_abs_filters = np.sum(abs_filters)
-
     # for theta in np.arange(0.0, 2.0 * np.pi, dtheta):
     #     for r in np.arange(dr, dr * 8.0 + dr, dr):
     #         frequency_domain_sum += frequency_domain
@@ -99,4 +96,4 @@ def _gabor_like_filters(N: int, sigma: float) -> np.ndarray:
 
     # filters = np.vstack(filters_list)
 
-    return filters, abs_filters, sum_abs_filters
+    return filters
