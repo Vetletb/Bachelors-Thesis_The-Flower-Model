@@ -7,15 +7,12 @@ SPH_KMEANS_ITERS = 1000
 
 
 def _create_filterbank(N: int, sigma: float, k: int, device: str) -> torch.Tensor:
-    filters, abs_filters, sum_abs_filters = _gabor_like_filters(N, sigma)
+    filters = _gabor_like_filters(N, sigma)
 
     filters = filters.astype("complex64")
-    abs_filters = abs_filters.astype("float32")
-    sum_abs_filters = sum_abs_filters.astype("float32")
-
-    sum_abs_filters = torch.tensor(sum_abs_filters, device=device)
-    abs_filters = torch.tensor(abs_filters, device=device)
     filters = torch.tensor(filters, device=device)
+
+    abs_filters = torch.abs(filters)
 
     filter_amount = filters.size(dim=0)
     filters = filters.view(filter_amount, -1)
@@ -44,4 +41,4 @@ def _create_filterbank(N: int, sigma: float, k: int, device: str) -> torch.Tenso
 
     filters_normalized = normalize(filters, dim=1)
 
-    return filters_normalized, sum_abs_filters
+    return filters_normalized, abs_filters
