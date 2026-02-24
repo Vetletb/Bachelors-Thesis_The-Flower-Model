@@ -117,7 +117,7 @@ class FeatureExtractor:
         padding = (int)((kernel_size - 1) / 2)
 
         # Get the filters as tensors
-        self.filters_normalized, self.frequency_domain_sum = _create_filterbank(
+        self.filters_normalized, self.abs_filters = _create_filterbank(
             N=kernel_size, sigma=self.sigma, k=self.k, device=self.device
         )
 
@@ -183,7 +183,7 @@ class FeatureExtractor:
 
             # Calculate cosine_similarity between unfolded image and filters, result is extracted features
             features = _cosine_similarity(
-                self.filters_normalized, unfolded_img, self.frequency_domain_sum
+                self.filters_normalized, unfolded_img, self.abs_filters
             )
 
             filter_amount = self.filters_normalized.size(dim=0)
