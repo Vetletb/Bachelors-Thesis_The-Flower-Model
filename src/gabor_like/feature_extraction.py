@@ -76,7 +76,7 @@ class FeatureExtractor:
         self.results_tensor = torch.empty(
             (
                 samples_len,
-                self.filters_normalized.size(dim=0),
+                self.filters_normalized.size(dim=0) * 2,
                 self.img_res,
                 self.img_res,
             )
@@ -186,7 +186,7 @@ class FeatureExtractor:
                 self.filters_normalized, unfolded_img, self.abs_filters
             )
 
-            filter_amount = self.filters_normalized.size(dim=0)
+            filter_amount = self.filters_normalized.size(dim=0) * 2
             current_batch_size = features.size(dim=0)
             features = features.view(
                 current_batch_size, filter_amount, self.img_res, self.img_res
