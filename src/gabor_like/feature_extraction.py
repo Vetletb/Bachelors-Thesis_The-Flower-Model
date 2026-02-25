@@ -76,7 +76,7 @@ class FeatureExtractor:
         self.results_tensor = torch.empty(
             (
                 samples_len,
-                self.filters_normalized.size(dim=0),
+                self.filters_normalized.size(dim=0) * 2,
                 self.img_res,
                 self.img_res,
             )
@@ -117,7 +117,7 @@ class FeatureExtractor:
         padding = (int)((kernel_size - 1) / 2)
 
         # Get the filters as tensors
-        self.filters_normalized, self.frequency_domain_sum = _create_filterbank(
+        self.filters_normalized, self.abs_filters = _create_filterbank(
             N=kernel_size, sigma=self.sigma, k=self.k, device=self.device
         )
 
@@ -183,10 +183,10 @@ class FeatureExtractor:
 
             # Calculate cosine_similarity between unfolded image and filters, result is extracted features
             features = _cosine_similarity(
-                self.filters_normalized, unfolded_img, self.frequency_domain_sum
+                self.filters_normalized, unfolded_img, self.abs_filters
             )
 
-            filter_amount = self.filters_normalized.size(dim=0)
+            filter_amount = self.filters_normalized.size(dim=0) * 2
             current_batch_size = features.size(dim=0)
             features = features.view(
                 current_batch_size, filter_amount, self.img_res, self.img_res
