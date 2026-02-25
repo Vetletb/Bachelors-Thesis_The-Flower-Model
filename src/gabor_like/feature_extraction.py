@@ -117,7 +117,7 @@ class FeatureExtractor:
         padding = (int)((kernel_size - 1) / 2)
 
         # Get the filters as tensors
-        self.filters_normalized, self.abs_filters = _create_filterbank(
+        self.filters_normalized, self.abs_filters, self.labels = _create_filterbank(
             N=kernel_size, sigma=self.sigma, k=self.k, device=self.device
         )
 
@@ -188,8 +188,21 @@ class FeatureExtractor:
 
             filter_amount = self.filters_normalized.size(dim=0) * 2
             current_batch_size = features.size(dim=0)
+
+            max_coeff_list = []
+            for i in range(self.k):
+                for j in range(4):
+                    sample = features[:, j::4]
+                    coeff_in_cluster = sample[:, labels == i]
+                    if coeff_in_cluster.size(dim=1) == 0:
+                        continue
+                    max_coeff = torch.amax(coeff_in_cluster, dim=1)
+                    max_coeff_list.append(max_coeff)
+
+            features = torch.stack(max_coeff_list)
+
             features = features.view(
-                current_batch_size, filter_amount, self.img_res, self.img_res
+                current_batch_size, self.k*4, self.img_res, self.img_res
             )
             with self.cv:
                 while self.work_available:
