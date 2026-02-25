@@ -15,17 +15,17 @@ def _cosine_similarity(
 
         current_abs = abs[i].view(-1, 1)
 
-        b *= current_abs
+        current_b = b *  current_abs
 
-        dtype = b.dtype
+        dtype = current_b.dtype
         eps = torch.finfo(dtype).eps
-        b_norm = torch.linalg.vector_norm(b, dim=-2).clamp_(min=eps)
+        b_norm = torch.linalg.vector_norm(current_b, dim=-2).clamp_(min=eps)
 
-        patch_size = b.size(dim=-1)
-        batch_size = b.size(dim=0)
-        b /= b_norm.view(batch_size, 1, patch_size)
+        patch_size = current_b.size(dim=-1)
+        batch_size = current_b.size(dim=0)
+        current_b /= b_norm.view(batch_size, 1, patch_size)
 
-        cos_sim = current_filters @ b
+        cos_sim = current_filters @ current_b
         cos_sim_list.append(cos_sim)
         
     cos_sim = torch.hstack(cos_sim_list)
