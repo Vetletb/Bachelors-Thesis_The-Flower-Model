@@ -117,8 +117,10 @@ class FeatureExtractor:
         padding = (int)((kernel_size - 1) / 2)
 
         # Get the filters as tensors
-        self.filters_normalized, self.abs_filters, self.cluster_labels = _create_filterbank(
-            N=kernel_size, sigma=self.sigma, k=self.k, device=self.device
+        self.filters_normalized, self.abs_filters, self.cluster_labels = (
+            _create_filterbank(
+                N=kernel_size, sigma=self.sigma, k=self.k, device=self.device
+            )
         )
 
         # Create image unfolder
@@ -202,7 +204,7 @@ class FeatureExtractor:
             features = torch.stack(max_coeff_list)
 
             features = features.view(
-                current_batch_size, self.k*4, self.img_res, self.img_res
+                current_batch_size, self.k * 4, self.img_res, self.img_res
             )
             with self.cv:
                 while self.work_available:
