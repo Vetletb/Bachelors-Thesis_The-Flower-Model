@@ -201,7 +201,6 @@ class FeatureExtractor:
             write_idx = 0
             for i in range(self.k):
                 mask = self.cluster_labels_exp == i
-                print(mask.sum() == 0)
                 if mask.sum() == 0:
                     continue
                 coeff_in_cluster = coeff[:, mask, :]
