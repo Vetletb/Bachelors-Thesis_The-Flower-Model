@@ -6,7 +6,7 @@ from torch.nn.functional import normalize
 SPH_KMEANS_ITERS = 1000
 
 
-def _create_filterbank(N: int, sigma: float, k: int, device: str) -> torch.Tensor:
+def _create_filterbank(N: int, sigma: float, k: int, device: str) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
     filters = _gabor_like_filters(N, sigma)
 
     filters = filters.astype("complex64")
