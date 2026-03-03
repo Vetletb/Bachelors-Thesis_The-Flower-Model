@@ -6,7 +6,7 @@ from torch.nn.functional import normalize
 SPH_KMEANS_ITERS = 1000
 
 
-def _create_filterbank(N: int, sigma: float, k: int, device: str) -> torch.Tensor:
+def _create_filterbank(N: int, sigma: float, k: int, device: str) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
     filters = _gabor_like_filters(N, sigma)
 
     filters = filters.astype("complex64")
@@ -20,18 +20,6 @@ def _create_filterbank(N: int, sigma: float, k: int, device: str) -> torch.Tenso
 
     labels = _spherical_kmeans(k, abs_filters, SPH_KMEANS_ITERS)
 
-    # max_filter_list = []
-    # for i in range(k):
-    #     filters_in_cluster = filters[labels == i]
-    #     if filters_in_cluster.size(dim=0) == 0:
-    #         continue
-    #     max_filter_real = torch.amax(filters_in_cluster.real, dim=0)
-    #     max_filter_imag = torch.amax(filters_in_cluster.imag, dim=0)
-    #     max_filter_list.append(max_filter_real)
-    #     max_filter_list.append(max_filter_imag)
-
-    # max_filters = torch.stack(max_filter_list)
-
     filters_list = []
 
     filters_list.append(filters.real)
@@ -41,4 +29,4 @@ def _create_filterbank(N: int, sigma: float, k: int, device: str) -> torch.Tenso
 
     filters_normalized = normalize(filters, dim=1)
 
-    return filters_normalized, abs_filters
+    return filters_normalized, abs_filters, labels
