@@ -13,7 +13,7 @@ def _cosine_similarity(
 
     cos_sim = torch.empty(
         (batch_size, filter_amount * 4, patch_size),
-        device=b.device,
+        device=b.device, dtype=dtype,
     )
 
     for i in range(filter_amount):
