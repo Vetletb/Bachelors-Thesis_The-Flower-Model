@@ -47,8 +47,8 @@ class FeatureExtractor:
         _save_labels(classes, output_path)
 
         # Record GPU memory for performance testing
-        # if device.type == "cuda":
-        #    torch.cuda.memory._record_memory_history()
+        # if self.device.type == "cuda":
+        #     torch.cuda.memory._record_memory_history()
 
         # Create consumer for writing results
         consumer = threading.Thread(target=self._consumer_disk, daemon=True)
@@ -60,8 +60,8 @@ class FeatureExtractor:
         # Wait for consumer to finish writing
         consumer.join()
 
-        # if device.type == "cuda":
-        #   torch.cuda.memory._dump_snapshot("my_snapshot.pickle")
+        # if self.device.type == "cuda":
+        #     torch.cuda.memory._dump_snapshot("my_snapshot.pickle")
 
     def extract_to_tensor(self) -> tuple[torch.Tensor, torch.Tensor, list[str]]:
         self._setup()
@@ -184,36 +184,44 @@ class FeatureExtractor:
             unfolded_img = self.unfold(images)
 
             # Calculate cosine_similarity between unfolded image and filters, result is extracted features
-            features = _cosine_similarity(
+            coeff = _cosine_similarity(
                 self.filters_normalized, unfolded_img, self.abs_filters
             )
 
-            filter_amount = self.filters_normalized.size(dim=0) * 2
-            current_batch_size = features.size(dim=0)
+            current_batch_size = coeff.size(dim=0)
 
-            max_coeff_list = []
-            for i in range(self.k):
-                for j in range(4):
-                    sample = features[:, j::4]
-                    coeff_in_cluster = sample[:, self.cluster_labels == i]
-                    if coeff_in_cluster.size(dim=1) == 0:
-                        continue
-                    max_coeff = torch.amax(coeff_in_cluster, dim=1)
-                    max_coeff_list.append(max_coeff)
+            actual_k = torch.unique(self.cluster_labels).numel()
 
-            features = torch.stack(max_coeff_list)
-
-            features = features.view(
-                current_batch_size, self.k * 4, self.img_res, self.img_res
+            max_coeff = torch.empty(
+                (current_batch_size, actual_k, self.img_res * self.img_res),
+                device=self.device,
             )
+
+            cluster_labels_exp = self.cluster_labels.repeat_interleave(4)
+
+            for i in range(actual_k):
+                mask = cluster_labels_exp == i
+                if mask.sum() == 0:
+                    continue
+                coeff_in_cluster = coeff[:, mask, :]
+                max_coeff[:, i, :] = coeff_in_cluster.amax(dim=1)
+                del coeff_in_cluster
+
+            max_coeff = max_coeff.view(
+                current_batch_size, actual_k, self.img_res, self.img_res
+            )
+
             with self.cv:
                 while self.work_available:
                     self.cv.wait()
-                self.results = features.to("cpu", non_blocking=True).clone()
+                self.results = max_coeff.to("cpu", non_blocking=True).clone()
                 self.result_labels = labels.clone()
                 self.work_available = True
                 self.cv.notify_all()
-            del unfolded_img, features
+            del max_coeff, coeff, unfolded_img
+            if self.device.type == "cuda":
+                torch.cuda.empty_cache()
+
         with self.cv:
             self.done = True
             self.cv.notify_all()
