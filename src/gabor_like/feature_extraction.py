@@ -117,10 +117,8 @@ class FeatureExtractor:
         padding = (int)((kernel_size - 1) / 2)
 
         # Get the filters as tensors
-        self.filters_normalized, self.abs_filters, cluster_labels = (
-            _create_filterbank(
-                N=kernel_size, sigma=self.sigma, k=self.k, device=self.device
-            )
+        self.filters_normalized, self.abs_filters, cluster_labels = _create_filterbank(
+            N=kernel_size, sigma=self.sigma, k=self.k, device=self.device
         )
 
         self.actual_k = torch.unique(cluster_labels).numel()
