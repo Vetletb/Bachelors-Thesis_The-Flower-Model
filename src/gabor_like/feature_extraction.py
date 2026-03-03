@@ -117,11 +117,14 @@ class FeatureExtractor:
         padding = (int)((kernel_size - 1) / 2)
 
         # Get the filters as tensors
-        self.filters_normalized, self.abs_filters, self.cluster_labels = (
+        self.filters_normalized, self.abs_filters, cluster_labels = (
             _create_filterbank(
                 N=kernel_size, sigma=self.sigma, k=self.k, device=self.device
             )
         )
+
+        self.actual_k = torch.unique(cluster_labels).numel()
+        self.cluster_labels_exp = cluster_labels.repeat_interleave(4)
 
         # Create image unfolder
         self.unfold = torch.nn.Unfold(
@@ -190,25 +193,24 @@ class FeatureExtractor:
 
             current_batch_size = coeff.size(dim=0)
 
-            actual_k = torch.unique(self.cluster_labels).numel()
-
             max_coeff = torch.empty(
-                (current_batch_size, actual_k, self.img_res * self.img_res),
+                (current_batch_size, self.actual_k, self.img_res * self.img_res),
                 device=self.device,
             )
 
-            cluster_labels_exp = self.cluster_labels.repeat_interleave(4)
-
-            for i in range(actual_k):
-                mask = cluster_labels_exp == i
+            write_idx = 0
+            for i in range(self.k):
+                mask = self.cluster_labels_exp == i
+                print(mask.sum() == 0)
                 if mask.sum() == 0:
                     continue
                 coeff_in_cluster = coeff[:, mask, :]
-                max_coeff[:, i, :] = coeff_in_cluster.amax(dim=1)
+                max_coeff[:, write_idx, :] = coeff_in_cluster.amax(dim=1)
+                write_idx += 1
                 del coeff_in_cluster
 
             max_coeff = max_coeff.view(
-                current_batch_size, actual_k, self.img_res, self.img_res
+                current_batch_size, self.actual_k, self.img_res, self.img_res
             )
 
             with self.cv:
@@ -219,8 +221,6 @@ class FeatureExtractor:
                 self.work_available = True
                 self.cv.notify_all()
             del max_coeff, coeff, unfolded_img
-            if self.device.type == "cuda":
-                torch.cuda.empty_cache()
 
         with self.cv:
             self.done = True
