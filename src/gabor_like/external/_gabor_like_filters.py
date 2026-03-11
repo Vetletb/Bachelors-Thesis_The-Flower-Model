@@ -11,7 +11,7 @@ def _gabor_like_filters(N: int, sigma: float) -> np.ndarray:
     dr = radius / 20
     steps = radius / dr
     dtheta = np.arccos(1 - (dr**2 / (2 * radius**2)))
-    
+
     dr *= 0.5
 
     frequency_domain = _gaussian(n, np.array([0.0, 0.0]), sigma, True)
