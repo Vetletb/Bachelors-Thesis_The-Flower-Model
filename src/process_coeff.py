@@ -32,7 +32,8 @@ class CoeffProcessor:
         filters = filters.astype("complex64")
         filters = torch.tensor(filters, device=self.device)
         abs_filters = torch.abs(filters)
-
+        abs_filters = abs_filters.view(abs_filters.shape(0), -1)
+        
         cluster_labels = _spherical_kmeans(self.k, abs_filters, 1000)
 
         for i in range(self.num_batches):
