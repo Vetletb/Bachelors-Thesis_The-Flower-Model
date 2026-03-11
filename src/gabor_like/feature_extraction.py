@@ -49,7 +49,7 @@ class FeatureExtractor:
         #     torch.cuda.memory._record_memory_history()
 
         # Create consumer for writing results
-        consumer = threading.Thread(target=self._consumer_disk, daemon=True)
+        consumer = threading.Thread(target=self._consumer, daemon=True)
         consumer.start()
 
         # Start producing extracted features
