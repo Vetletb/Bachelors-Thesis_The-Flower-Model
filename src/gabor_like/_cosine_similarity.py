@@ -12,7 +12,7 @@ def _cosine_similarity(
     eps = torch.finfo(dtype).eps
 
     cos_sim = torch.empty(
-        (batch_size, filter_amount * 4, patch_size),
+        (batch_size, filter_amount * 2, patch_size),
         device=b.device,
         dtype=dtype,
     )
@@ -20,7 +20,7 @@ def _cosine_similarity(
     for i in range(filter_amount):
         real = a_normalized[i]
         imag = a_normalized[i + filter_amount]
-        current_filters = torch.stack([real, imag, -real, -imag])
+        current_filters = torch.stack([real, imag])
 
         current_abs = abs[i].view(-1, 1)
 
@@ -30,7 +30,7 @@ def _cosine_similarity(
 
         current_b /= b_norm.view(batch_size, 1, patch_size)
 
-        cos_sim[:, i * 4 : i * 4 + 4, :] = current_filters @ current_b
+        cos_sim[:, i * 2 : i * 2 + 2, :] = current_filters @ current_b
 
         del current_b
 
