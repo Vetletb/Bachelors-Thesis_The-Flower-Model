@@ -34,125 +34,32 @@ def _create_filterbank(
     return filters_normalized, abs_filters, labels
 
 
-def _shift_filters(N: int, filters: torch.Tensor, device: str):
-    steps = 3
-    step_size = int((N - 1) / (2 * steps) * 0.2)
+def _shift_filters(filters: torch.Tensor, steps: int) -> torch.Tensor:
+    padding = torch.nn.ZeroPad2d(steps)
+    padded_filters = padding(filters)
 
-    filters_amount = filters.size(dim=0)
+    filters_list = [padded_filters]
 
-    filters_list = [filters]
-
-    current_v_step = 0
-    for _ in range(1, steps+1):
-        current_v_step += step_size
-
-        up_shift = torch.cat(
-            [
-                filters[:, current_v_step:],
-                torch.zeros(
-                    (filters_amount, current_v_step, N),
-                    dtype=filters.dtype,
-                    device=device,
-                ),
-            ],
-            dim=1,
-        )
+    for current_v_step in range(1, steps + 1):
+        up_shift = torch.roll(padded_filters, shifts=current_v_step, dims=2)
+        down_shift = torch.roll(padded_filters, shifts=-current_v_step, dims=2)
         filters_list.append(up_shift)
-
-        down_shift = torch.cat(
-            [
-                torch.zeros(
-                    (filters_amount, current_v_step, N),
-                    dtype=filters.dtype,
-                    device=device,
-                ),
-                filters[:, :-current_v_step],
-            ],
-            dim=1,
-        )
         filters_list.append(down_shift)
 
-    current_h_step = 0
-    for _ in range(1, steps+1):
-        current_h_step += step_size
-
-        left_shift = torch.cat(
-            [
-                filters[:, :, current_h_step:],
-                torch.zeros(
-                    (filters_amount, N, current_h_step),
-                    dtype=filters.dtype,
-                    device=device,
-                ),
-            ],
-            dim=2,
-        )
+    for current_h_step in range(1, steps + 1):
+        left_shift = torch.roll(padded_filters, shifts=current_h_step, dims=1)
+        right_shift = torch.roll(padded_filters, shifts=-current_h_step, dims=1)
         filters_list.append(left_shift)
-
-        right_shift = torch.cat(
-            [
-                torch.zeros(
-                    (filters_amount, N, current_h_step),
-                    dtype=filters.dtype,
-                    device=device,
-                ),
-                filters[:, :, :-current_h_step],
-            ],
-            dim=2,
-        )
         filters_list.append(right_shift)
 
-        current_v_step = 0
-        for _ in range(1, steps+2):
-            current_v_step += step_size
-
-            left_up_shift = torch.cat(
-                [
-                    left_shift[:, current_v_step:],
-                    torch.zeros(
-                        (filters_amount, current_v_step, N),
-                        dtype=left_shift.dtype,
-                        device=device,
-                    ),
-                ],
-                dim=1,
-            )
-            right_up_shift = torch.cat(
-                [
-                    right_shift[:, current_v_step:],
-                    torch.zeros(
-                        (filters_amount, current_v_step, N),
-                        dtype=right_shift.dtype,
-                        device=device,
-                    ),
-                ],
-                dim=1,
-            )
+        for current_v_step in range(1, steps + 1):
+            left_up_shift = torch.roll(left_shift, shifts=current_v_step, dims=2)
+            right_up_shift = torch.roll(right_shift, shifts=current_v_step, dims=2)
             filters_list.append(left_up_shift)
             filters_list.append(right_up_shift)
 
-            left_down_shift = torch.cat(
-                [
-                    torch.zeros(
-                        (filters_amount, current_v_step, N),
-                        dtype=left_shift.dtype,
-                        device=device,
-                    ),
-                    left_shift[:, :-current_v_step],
-                ],
-                dim=1,
-            )
-            right_down_shift = torch.cat(
-                [
-                    torch.zeros(
-                        (filters_amount, current_v_step, N),
-                        dtype=right_shift.dtype,
-                        device=device,
-                    ),
-                    right_shift[:, :-current_v_step],
-                ],
-                dim=1,
-            )
+            left_down_shift = torch.roll(left_shift, shifts=-current_v_step, dims=2)
+            right_down_shift = torch.roll(right_shift, shifts=-current_v_step, dims=2)
             filters_list.append(left_down_shift)
             filters_list.append(right_down_shift)
 
