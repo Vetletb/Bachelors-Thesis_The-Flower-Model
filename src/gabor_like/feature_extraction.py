@@ -184,35 +184,14 @@ class FeatureExtractor:
                 self.filters_normalized, unfolded_img, self.abs_filters
             )
 
-            current_batch_size = coeff.size(dim=0)
-
-            max_coeff = torch.empty(
-                (current_batch_size, self.actual_k, self.img_res * self.img_res),
-                device=self.device,
-            )
-
-            write_idx = 0
-            for i in range(self.k):
-                mask = self.cluster_labels_exp == i
-                if mask.sum() == 0:
-                    continue
-                coeff_in_cluster = coeff[:, mask, :]
-                max_coeff[:, write_idx, :] = coeff_in_cluster.amax(dim=1)
-                write_idx += 1
-                del coeff_in_cluster
-
-            max_coeff = max_coeff.view(
-                current_batch_size, self.actual_k, self.img_res, self.img_res
-            )
-
             with self.cv:
                 while self.work_available:
                     self.cv.wait()
-                self.results = max_coeff.to("cpu", non_blocking=True).clone()
+                self.results = coeff.to("cpu", non_blocking=True).clone()
                 self.result_labels = labels.clone()
                 self.work_available = True
                 self.cv.notify_all()
-            del max_coeff, coeff, unfolded_img
+            del coeff, unfolded_img
 
         with self.cv:
             self.done = True
