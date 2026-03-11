@@ -17,13 +17,11 @@ class FeatureExtractor:
         dataset: str,
         img_res: int,
         sigma: float,
-        k: int,
         batch_size: int,
     ):
         self.dataset = dataset
         self.img_res = img_res
         self.sigma = sigma
-        self.k = k
         self.batch_size = batch_size
 
         self.cv = threading.Condition()
@@ -117,12 +115,9 @@ class FeatureExtractor:
         padding = (int)((kernel_size - 1) / 2)
 
         # Get the filters as tensors
-        self.filters_normalized, self.abs_filters, cluster_labels = _create_filterbank(
-            N=kernel_size, sigma=self.sigma, k=self.k, device=self.device
+        self.filters_normalized, self.abs_filters = _create_filterbank(
+            N=kernel_size, sigma=self.sigma, device=self.device
         )
-
-        self.actual_k = torch.unique(cluster_labels).numel()
-        self.cluster_labels_exp = cluster_labels.repeat_interleave(4)
 
         # Create image unfolder
         self.unfold = torch.nn.Unfold(
