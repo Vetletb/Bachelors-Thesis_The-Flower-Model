@@ -17,13 +17,11 @@ class FeatureExtractor:
         dataset: str,
         img_res: int,
         sigma: float,
-        k: int,
         batch_size: int,
     ):
         self.dataset = dataset
         self.img_res = img_res
         self.sigma = sigma
-        self.k = k
         self.batch_size = batch_size
 
         self.cv = threading.Condition()
@@ -51,7 +49,7 @@ class FeatureExtractor:
         #     torch.cuda.memory._record_memory_history()
 
         # Create consumer for writing results
-        consumer = threading.Thread(target=self._consumer_disk, daemon=True)
+        consumer = threading.Thread(target=self._consumer, daemon=True)
         consumer.start()
 
         # Start producing extracted features
@@ -62,45 +60,6 @@ class FeatureExtractor:
 
         # if self.device.type == "cuda":
         #     torch.cuda.memory._dump_snapshot("my_snapshot.pickle")
-
-    def extract_to_tensor(self) -> tuple[torch.Tensor, torch.Tensor, list[str]]:
-        self._setup()
-
-        # Get a DataLoader object and information about the dataset
-        self.loader, classes, samples_len = _create_dataloader(
-            dataset=self.dataset,
-            batch_size=self.batch_size,
-            img_res=self.img_res,
-        )
-
-        self.results_tensor = torch.empty(
-            (
-                samples_len,
-                self.filters_normalized.size(dim=0) * 2,
-                self.img_res,
-                self.img_res,
-            )
-        )
-        self.result_label_tensor = torch.empty(samples_len, dtype=torch.long)
-
-        # Record GPU memory for performance testing
-        # if device.type == "cuda":
-        #    torch.cuda.memory._record_memory_history()
-
-        # Create consumer for writing results
-        consumer = threading.Thread(target=self._consumer_tensor, daemon=True)
-        consumer.start()
-
-        # Start producing extracted features
-        self._producer(self.device)
-
-        # Wait for consumer to finish writing
-        consumer.join()
-
-        # if device.type == "cuda":
-        #   torch.cuda.memory._dump_snapshot("my_snapshot.pickle")
-
-        return self.results_tensor, self.result_label_tensor, classes
 
     def _setup(self):
         self.work_available = False
@@ -117,19 +76,16 @@ class FeatureExtractor:
         padding = (int)((kernel_size - 1) / 2)
 
         # Get the filters as tensors
-        self.filters_normalized, self.abs_filters, cluster_labels = _create_filterbank(
-            N=kernel_size, sigma=self.sigma, k=self.k, device=self.device
+        self.filters_normalized, self.abs_filters = _create_filterbank(
+            N=kernel_size, sigma=self.sigma, device=self.device
         )
-
-        self.actual_k = torch.unique(cluster_labels).numel()
-        self.cluster_labels_exp = cluster_labels.repeat_interleave(4)
 
         # Create image unfolder
         self.unfold = torch.nn.Unfold(
             kernel_size=(kernel_size, kernel_size), padding=padding
         )
 
-    def _consumer_disk(self):
+    def _consumer(self):
         file_index = 0
 
         while True:
@@ -149,34 +105,6 @@ class FeatureExtractor:
 
                 self.cv.notify_all()
 
-    def _consumer_tensor(self):
-        batch_index = 0
-        write_offset = 0
-
-        while True:
-            with self.cv:
-                print()
-                while not self.work_available and not self.done:
-                    self.cv.wait()
-
-                if not self.work_available and self.done:
-                    break
-
-                batch_size = self.results.size(dim=0)
-                self.results_tensor[write_offset : write_offset + batch_size] = (
-                    self.results
-                )
-                self.result_label_tensor[write_offset : write_offset + batch_size] = (
-                    self.result_labels
-                )
-                write_offset += batch_size
-
-                self.work_available = False
-                print(batch_index)
-                batch_index += 1
-
-                self.cv.notify_all()
-
     def _producer(self, device):
         for images, labels in self.loader:
             images = images.to(device)
@@ -189,35 +117,14 @@ class FeatureExtractor:
                 self.filters_normalized, unfolded_img, self.abs_filters
             )
 
-            current_batch_size = coeff.size(dim=0)
-
-            max_coeff = torch.empty(
-                (current_batch_size, self.actual_k, self.img_res * self.img_res),
-                device=self.device,
-            )
-
-            write_idx = 0
-            for i in range(self.k):
-                mask = self.cluster_labels_exp == i
-                if mask.sum() == 0:
-                    continue
-                coeff_in_cluster = coeff[:, mask, :]
-                max_coeff[:, write_idx, :] = coeff_in_cluster.amax(dim=1)
-                write_idx += 1
-                del coeff_in_cluster
-
-            max_coeff = max_coeff.view(
-                current_batch_size, self.actual_k, self.img_res, self.img_res
-            )
-
             with self.cv:
                 while self.work_available:
                     self.cv.wait()
-                self.results = max_coeff.to("cpu", non_blocking=True).clone()
+                self.results = coeff.to("cpu", non_blocking=True).clone()
                 self.result_labels = labels.clone()
                 self.work_available = True
                 self.cv.notify_all()
-            del max_coeff, coeff, unfolded_img
+            del coeff, unfolded_img
 
         with self.cv:
             self.done = True
