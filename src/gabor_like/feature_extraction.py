@@ -61,45 +61,6 @@ class FeatureExtractor:
         # if self.device.type == "cuda":
         #     torch.cuda.memory._dump_snapshot("my_snapshot.pickle")
 
-    def extract_to_tensor(self) -> tuple[torch.Tensor, torch.Tensor, list[str]]:
-        self._setup()
-
-        # Get a DataLoader object and information about the dataset
-        self.loader, classes, samples_len = _create_dataloader(
-            dataset=self.dataset,
-            batch_size=self.batch_size,
-            img_res=self.img_res,
-        )
-
-        self.results_tensor = torch.empty(
-            (
-                samples_len,
-                self.filters_normalized.size(dim=0) * 2,
-                self.img_res,
-                self.img_res,
-            )
-        )
-        self.result_label_tensor = torch.empty(samples_len, dtype=torch.long)
-
-        # Record GPU memory for performance testing
-        # if device.type == "cuda":
-        #    torch.cuda.memory._record_memory_history()
-
-        # Create consumer for writing results
-        consumer = threading.Thread(target=self._consumer_tensor, daemon=True)
-        consumer.start()
-
-        # Start producing extracted features
-        self._producer(self.device)
-
-        # Wait for consumer to finish writing
-        consumer.join()
-
-        # if device.type == "cuda":
-        #   torch.cuda.memory._dump_snapshot("my_snapshot.pickle")
-
-        return self.results_tensor, self.result_label_tensor, classes
-
     def _setup(self):
         self.work_available = False
         self.done = False
@@ -124,7 +85,7 @@ class FeatureExtractor:
             kernel_size=(kernel_size, kernel_size), padding=padding
         )
 
-    def _consumer_disk(self):
+    def _consumer(self):
         file_index = 0
 
         while True:
@@ -141,34 +102,6 @@ class FeatureExtractor:
                 self.work_available = False
                 print(file_index)
                 file_index += 1
-
-                self.cv.notify_all()
-
-    def _consumer_tensor(self):
-        batch_index = 0
-        write_offset = 0
-
-        while True:
-            with self.cv:
-                print()
-                while not self.work_available and not self.done:
-                    self.cv.wait()
-
-                if not self.work_available and self.done:
-                    break
-
-                batch_size = self.results.size(dim=0)
-                self.results_tensor[write_offset : write_offset + batch_size] = (
-                    self.results
-                )
-                self.result_label_tensor[write_offset : write_offset + batch_size] = (
-                    self.result_labels
-                )
-                write_offset += batch_size
-
-                self.work_available = False
-                print(batch_index)
-                batch_index += 1
 
                 self.cv.notify_all()
 
