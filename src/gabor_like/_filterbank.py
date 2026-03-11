@@ -14,8 +14,6 @@ def _create_filterbank(
     filters = filters.astype("complex64")
     filters = torch.tensor(filters, device=device)
 
-    filters = _shift_filters(N, filters, device=device)
-
     abs_filters = torch.abs(filters)
 
     filter_amount = filters.size(dim=0)
