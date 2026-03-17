@@ -2,8 +2,6 @@ from gabor_like.external._gabor_like_filters import _gabor_like_filters
 import torch
 from torch.nn.functional import normalize
 
-SPH_KMEANS_ITERS = 1000
-
 
 def _create_filterbank(
     N: int, sigma: float, device: str
@@ -31,33 +29,34 @@ def _create_filterbank(
     return filters_normalized, abs_filters
 
 
-def _shift_filters(filters: torch.Tensor, steps: int) -> torch.Tensor:
-    padding = torch.nn.ZeroPad2d(steps)
-    padded_filters = padding(filters)
+def _shift_filters(filters: torch.Tensor, steps: int, img_res: int) -> torch.Tensor:
+    filter_amount = filters.size(dim=0)
+    even_img = img_res % 2 == 0
+    filter_radius = (filters.size(dim=1) - 1) / 2
+    if even_img:
+        box_size = int(steps * 2 + filter_radius * 2)
+        offset = 0
+    else:
+        box_size = int(steps * 2 + 1 + filter_radius * 2)
+        offset = 1
+
+    padded_filters = torch.zeros(
+        filter_amount, box_size, box_size, device=filters.device, dtype=filters.dtype
+    )
+    padded_filters[:, : filters.size(dim=1), : filters.size(dim=1)] = filters
 
     filters_list = [padded_filters]
 
-    for current_v_step in range(1, steps + 1):
-        up_shift = torch.roll(padded_filters, shifts=current_v_step, dims=2)
-        down_shift = torch.roll(padded_filters, shifts=-current_v_step, dims=2)
-        filters_list.append(up_shift)
-        filters_list.append(down_shift)
-
-    for current_h_step in range(1, steps + 1):
-        left_shift = torch.roll(padded_filters, shifts=current_h_step, dims=1)
-        right_shift = torch.roll(padded_filters, shifts=-current_h_step, dims=1)
-        filters_list.append(left_shift)
+    for current_h_step in range(1, steps * 2 + offset):
+        right_shift = torch.roll(padded_filters, shifts=current_h_step, dims=2)
         filters_list.append(right_shift)
 
-        for current_v_step in range(1, steps + 1):
-            left_up_shift = torch.roll(left_shift, shifts=current_v_step, dims=2)
-            right_up_shift = torch.roll(right_shift, shifts=current_v_step, dims=2)
-            filters_list.append(left_up_shift)
-            filters_list.append(right_up_shift)
+    for current_v_step in range(1, steps * 2 + offset):
+        down_shift = torch.roll(padded_filters, shifts=current_v_step, dims=1)
+        filters_list.append(down_shift)
 
-            left_down_shift = torch.roll(left_shift, shifts=-current_v_step, dims=2)
-            right_down_shift = torch.roll(right_shift, shifts=-current_v_step, dims=2)
-            filters_list.append(left_down_shift)
-            filters_list.append(right_down_shift)
+        for current_h_step in range(1, steps * 2 + offset):
+            down_right_shift = torch.roll(down_shift, shifts=current_h_step, dims=2)
+            filters_list.append(down_right_shift)
 
     return torch.vstack(filters_list)
