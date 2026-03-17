@@ -27,19 +27,20 @@ class CoeffProcessor:
         filters = filters.astype("complex64")
         filters = torch.tensor(filters, device=self.device)
 
+        filters_amount = filters.size(dim=0)
+
         filters = _shift_filters(filters, steps, self.img_res)
         abs_filters = torch.abs(filters)
         abs_filters = abs_filters.view(abs_filters.size(dim=0), -1)
 
         shift_width = 2 * steps if self.img_res % 2 == 0 else (2 * steps + 1)
-        shift_amount = shift_width**2
-        total_filters_amount = filters.size(dim=0)
+        shifted_filters_amount = filters.size(dim=0)
 
-        cluster_labels = _spherical_kmeans(self.k, abs_filters, 1000)
+        cluster_labels = _spherical_kmeans(self.k, abs_filters, 100)
 
         cluster_labels_list = []
-        for i in range(shift_amount):
-            for j in range(i, total_filters_amount, shift_amount):
+        for i in range(filters_amount):
+            for j in range(i, shifted_filters_amount, filters_amount):
                 cluster_labels_list.append(cluster_labels[j])
 
         cluster_labels = torch.hstack(cluster_labels_list)
@@ -67,8 +68,8 @@ class CoeffProcessor:
             )
 
             write_idx = 0
-            for i in range(self.k):
-                mask = cluster_labels_exp == i
+            for j in range(self.k):
+                mask = cluster_labels_exp == j
                 if mask.sum() == 0:
                     continue
                 coeff_in_cluster = current_batch[:, mask]
