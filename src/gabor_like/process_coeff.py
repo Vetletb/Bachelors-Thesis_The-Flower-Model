@@ -59,6 +59,7 @@ class CoeffProcessor:
             print(i)
             current_batch = torch.load(os.path.join(self.coeff_path, f"{i}.pt"))
             current_batch = current_batch.to(self.device)
+            current_batch = current_batch.abs()
 
             current_batch_size = current_batch.size(dim=0)
             current_batch = current_batch.view(current_batch_size, -1)  # (images, coeff)
