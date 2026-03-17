@@ -5,6 +5,8 @@ from gabor_like.external._gabor_like_filters import _gabor_like_filters
 from gabor_like._kmeans import _spherical_kmeans
 from gabor_like._filterbank import _shift_filters
 
+SPH_KMEANS_ITERS = 100
+
 
 class CoeffProcessor:
     def __init__(self, path: str, img_res: int, sigma: float, k: int):
@@ -36,7 +38,7 @@ class CoeffProcessor:
         shift_width = 2 * steps if self.img_res % 2 == 0 else (2 * steps + 1)
         shifted_filters_amount = filters.size(dim=0)
 
-        cluster_labels = _spherical_kmeans(self.k, abs_filters, 100)
+        cluster_labels = _spherical_kmeans(self.k, abs_filters, SPH_KMEANS_ITERS)
 
         cluster_labels_list = []
         for i in range(filters_amount):
@@ -62,7 +64,9 @@ class CoeffProcessor:
             current_batch = current_batch.abs()
 
             current_batch_size = current_batch.size(dim=0)
-            current_batch = current_batch.view(current_batch_size, -1)  # (images, coeff)
+            current_batch = current_batch.view(
+                current_batch_size, -1
+            )  # (images, coeff)
 
             max_coeff = torch.empty(
                 (current_batch_size, actual_k),

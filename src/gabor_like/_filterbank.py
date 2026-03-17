@@ -2,8 +2,6 @@ from gabor_like.external._gabor_like_filters import _gabor_like_filters
 import torch
 from torch.nn.functional import normalize
 
-SPH_KMEANS_ITERS = 1000
-
 
 def _create_filterbank(
     N: int, sigma: float, device: str
