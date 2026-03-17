@@ -56,11 +56,12 @@ class CoeffProcessor:
         cluster_labels_exp = cluster_labels.repeat_interleave(2)  # (labels)
 
         for i in range(self.num_batches):
-            current_batch = torch.load(os.path.join(self.coeff_path, f"{i}.pt"))[2]
+            print(i)
+            current_batch = torch.load(os.path.join(self.coeff_path, f"{i}.pt"))
             current_batch = current_batch.to(self.device)
-            current_batch = current_batch.view(1, -1)  # (images, coeff)
 
             current_batch_size = current_batch.size(dim=0)
+            current_batch = current_batch.view(current_batch_size, -1)  # (images, coeff)
 
             max_coeff = torch.empty(
                 (current_batch_size, actual_k),
@@ -76,5 +77,3 @@ class CoeffProcessor:
                 max_coeff[:, write_idx] = coeff_in_cluster.amax(dim=1)
                 write_idx += 1
                 del coeff_in_cluster
-            print(max_coeff)
-            break
