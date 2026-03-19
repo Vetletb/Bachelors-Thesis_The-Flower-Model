@@ -59,7 +59,6 @@ def _shift_filters(filters: torch.Tensor, steps: int, img_res: int) -> torch.Ten
         end = start + filter_amount
         shifted_filters[start:end, :, :] = right_shift
 
-    current_h_step = 0
     for current_v_step in range(1, steps * 2 + offset):
         down_shift = torch.roll(padded_filters, shifts=current_v_step, dims=1)
         v_start = current_v_step * dim_steps * filter_amount
