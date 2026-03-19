@@ -29,16 +29,17 @@ class CoeffProcessor:
         filters = filters.astype("complex64")
         filters = torch.tensor(filters, device=self.device)
 
+        filters = filters.abs()
+
         filters_amount = filters.size(dim=0)
 
         filters = _shift_filters(filters, steps, self.img_res)
-        abs_filters = torch.abs(filters)
-        abs_filters = abs_filters.view(abs_filters.size(dim=0), -1)
+        filters = filters.view(filters.size(dim=0), -1)
 
         shift_width = 2 * steps if self.img_res % 2 == 0 else (2 * steps + 1)
         shifted_filters_amount = filters.size(dim=0)
 
-        cluster_labels = _spherical_kmeans(self.k, abs_filters, SPH_KMEANS_ITERS)
+        cluster_labels = _spherical_kmeans(self.k, filters, SPH_KMEANS_ITERS)
 
         cluster_labels_list = []
         for i in range(filters_amount):
