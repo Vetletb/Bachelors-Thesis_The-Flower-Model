@@ -18,11 +18,15 @@ class FeatureExtractor:
         img_res: int,
         sigma: float,
         batch_size: int,
+        steps: int,
+        percent: int
     ):
         self.dataset = dataset
         self.img_res = img_res
         self.sigma = sigma
         self.batch_size = batch_size
+        self.steps = steps
+        self.percent = percent
 
         self.cv = threading.Condition()
 
@@ -77,7 +81,7 @@ class FeatureExtractor:
 
         # Get the filters as tensors
         self.filters_normalized, self.abs_filters = _create_filterbank(
-            N=kernel_size, sigma=self.sigma, device=self.device
+            N=kernel_size, sigma=self.sigma, device=self.device, steps=self.steps, perc=self.percent
         )
 
         # Create image unfolder

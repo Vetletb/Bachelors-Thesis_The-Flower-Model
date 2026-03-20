@@ -4,9 +4,9 @@ from torch.nn.functional import normalize
 
 
 def _create_filterbank(
-    N: int, sigma: float, device: str
+    N: int, sigma: float, device: str, steps: int, percent: float
 ) -> tuple[torch.Tensor, torch.Tensor]:
-    filters = _gabor_like_filters(N, sigma)
+    filters = _gabor_like_filters(N, sigma, steps, percent)
 
     filters = filters.astype("complex64")
     filters = torch.tensor(filters, device=device)

@@ -9,7 +9,9 @@ SPH_KMEANS_ITERS = 100
 
 
 class CoeffProcessor:
-    def __init__(self, path: str, img_res: int, sigma: float, k: int):
+    def __init__(self, path: str, img_res: int, sigma: float, k: int, f_steps: int, f_percent):
+        self.f_steps = f_steps
+        self.f_percent = f_percent
         self.coeff_path = os.path.join(path, "extracted_features")
         self.num_batches = len(os.listdir(self.coeff_path))
         self.img_res = img_res
@@ -25,7 +27,7 @@ class CoeffProcessor:
         else:
             N = self.img_res
 
-        filters = _gabor_like_filters(N, self.sigma)
+        filters = _gabor_like_filters(N, self.sigma, self.f_steps, self.f_percent)
         filters = filters.astype("complex64")
         filters = torch.tensor(filters, device=self.device)
 
