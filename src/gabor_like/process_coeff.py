@@ -5,19 +5,19 @@ from .external._gabor_like_filters import _gabor_like_filters
 from ._kmeans import _spherical_kmeans
 from ._filterbank import _shift_filters
 from ._data import _save_pooled, _prepare_folder
-from ._data import PREPROCESSEDS_FOLDER
+from ._data import PREPROCESSED_FOLDER
 
 SPH_KMEANS_ITERS = 100
 
 
 class CoeffProcessor:
     def __init__(
-        self, path: str, img_res: int, sigma: float, k: int, f_steps: int, f_percent
+        self, path: str, img_res: int, sigma: float, k: int, f_steps: int, f_percent: float
     ):
         self.f_steps = f_steps
         self.f_percent = f_percent
         self.path = path
-        self.coeff_path = os.path.join(path, PREPROCESSEDS_FOLDER)
+        self.coeff_path = os.path.join(path, PREPROCESSED_FOLDER)
         self.num_batches = len(os.listdir(self.coeff_path))
         self.img_res = img_res
         self.sigma = sigma
@@ -95,4 +95,3 @@ class CoeffProcessor:
                 del coeff_in_cluster
 
             _save_pooled(max_coeff.cpu(), i, pool_path)
-            i += 1
