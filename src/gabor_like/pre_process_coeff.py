@@ -36,7 +36,8 @@ class CoeffPreProcessor:
 
     def extract_to_disk(self, output_path: str):
         self.output_path = os.path.join(
-            output_path, f"coeff_{self.img_res}_{self.sigma}_{self.steps}_{self.percent}"
+            output_path,
+            f"coeff_{self.img_res}_{self.sigma}_{self.steps}_{self.percent}",
         )
         _prepare_output_folder(self.output_path)
 
