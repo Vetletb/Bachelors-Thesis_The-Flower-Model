@@ -1,6 +1,6 @@
 # gabor_like/__init__.py
 
-from .feature_extraction import FeatureExtractor
+from .pre_process_coeff import CoeffPreProcessor
 from .process_coeff import CoeffProcessor
 
-__all__ = ["FeatureExtractor", "CoeffProcessor"]
+__all__ = ["CoeffPreProcessor", "CoeffProcessor"]

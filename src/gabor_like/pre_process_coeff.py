@@ -12,7 +12,7 @@ import threading
 import os
 
 
-class FeatureExtractor:
+class CoeffPreProcessor:
     def __init__(
         self,
         dataset: str,
