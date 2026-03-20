@@ -20,7 +20,7 @@ class CoeffPreProcessor:
         sigma: float,
         batch_size: int,
         steps: int,
-        percent: int,
+        percent: float,
     ):
         self.dataset = dataset
         self.img_res = img_res
@@ -36,9 +36,9 @@ class CoeffPreProcessor:
 
     def extract_to_disk(self, output_path: str):
         self.output_path = os.path.join(
-            output_path, f"coeff_{self.img_res}_{self.steps}_{self.percent}"
+            output_path, f"coeff_{self.img_res}_{self.sigma}_{self.steps}_{self.percent}"
         )
-        _prepare_output_folder(output_path)
+        _prepare_output_folder(self.output_path)
 
         self._setup()
 
@@ -49,7 +49,7 @@ class CoeffPreProcessor:
             img_res=self.img_res,
         )
 
-        _save_labels(classes, output_path)
+        _save_labels(classes, self.output_path)
 
         # Record GPU memory for performance testing
         # if self.device.type == "cuda":
@@ -88,7 +88,7 @@ class CoeffPreProcessor:
             sigma=self.sigma,
             device=self.device,
             steps=self.steps,
-            perc=self.percent,
+            percent=self.percent,
         )
 
         # Create image unfolder

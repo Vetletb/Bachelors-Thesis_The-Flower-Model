@@ -17,8 +17,8 @@ class CoeffProcessor:
         self.f_steps = f_steps
         self.f_percent = f_percent
         self.path = path
-        coeff_path = os.path.join(path, PREPROCESSEDS_FOLDER)
-        self.num_batches = len(os.listdir(coeff_path))
+        self.coeff_path = os.path.join(path, PREPROCESSEDS_FOLDER)
+        self.num_batches = len(os.listdir(self.coeff_path))
         self.img_res = img_res
         self.sigma = sigma
         self.k = k
