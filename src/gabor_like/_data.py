@@ -10,13 +10,13 @@ LABEL_RESULTS_FOLDER = "labels"
 def _prepare_output_folder(path: str):
     preprocessed_path = os.path.join(path, PREPROCESSEDS_FOLDER)
     labels_path = os.path.join(path, LABEL_RESULTS_FOLDER)
-    os.makedirs(path, exist_ok=True)
-    os.makedirs(preprocessed_path, exist_ok=True)
-    os.makedirs(labels_path, exist_ok=True)
+    os.makedirs(path)
+    os.makedirs(preprocessed_path)
+    os.makedirs(labels_path)
 
 
 def _prepare_folder(path: str):
-    os.makedirs(path, exist_ok=True)
+    os.makedirs(path)
 
 
 def _create_dataloader(
