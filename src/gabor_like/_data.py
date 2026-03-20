@@ -8,15 +8,20 @@ LABEL_RESULTS_FOLDER = "labels"
 
 
 def _prepare_output_folder(path: str):
-    features_path = os.path.join(path, PREPROCESSEDS_FOLDER)
+    preprocessed_path = os.path.join(path, PREPROCESSEDS_FOLDER)
     labels_path = os.path.join(path, LABEL_RESULTS_FOLDER)
-    os.makedirs(features_path, exist_ok=True)
+    os.makedirs(path, exist_ok=True)
+    os.makedirs(preprocessed_path, exist_ok=True)
     os.makedirs(labels_path, exist_ok=True)
+
+
+def _prepare_folder(path: str):
+    os.makedirs(path, exist_ok=True)
 
 
 def _create_dataloader(
     dataset: str, batch_size: int, img_res: int
-) -> tuple[torch.utils.data.DataLoader, list[str], int]:
+) -> tuple[torch.utils.data.DataLoader, list[str]]:
     transform = transforms.Compose(
         [
             transforms.Grayscale(num_output_channels=1),
@@ -29,7 +34,7 @@ def _create_dataloader(
     loader = torch.utils.data.DataLoader(
         dataset, batch_size=batch_size, shuffle=False, pin_memory=True
     )
-    return loader, dataset.classes, len(dataset)
+    return loader, dataset.classes
 
 
 def _save_result(result: torch.Tensor, index: int, path: str):
@@ -45,6 +50,7 @@ def _save_result_labels(labels: torch.Tensor, index: int, path: str):
 def _save_labels(labels: list[str], path: str):
     labels_path = os.path.join(path, "classes.pt")
     torch.save(labels, labels_path)
+
 
 def _save_pooled(result: torch.Tensor, index: int, path: str):
     pool_path = os.path.join(path, f"{index}.pt")

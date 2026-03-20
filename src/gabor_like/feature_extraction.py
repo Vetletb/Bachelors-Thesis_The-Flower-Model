@@ -9,6 +9,7 @@ from gabor_like._data import (
 from gabor_like._filterbank import _create_filterbank
 import torch
 import threading
+import os
 
 
 class FeatureExtractor:
@@ -19,7 +20,7 @@ class FeatureExtractor:
         sigma: float,
         batch_size: int,
         steps: int,
-        percent: int
+        percent: int,
     ):
         self.dataset = dataset
         self.img_res = img_res
@@ -34,13 +35,15 @@ class FeatureExtractor:
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
     def extract_to_disk(self, output_path: str):
-        self.output_path = output_path
+        self.output_path = os.path.join(
+            output_path, f"coeff_{self.img_res}_{self.steps}_{self.percent}"
+        )
         _prepare_output_folder(output_path)
 
         self._setup()
 
         # Get a DataLoader object and information about the dataset
-        self.loader, classes, samples_len = _create_dataloader(
+        self.loader, classes = _create_dataloader(
             dataset=self.dataset,
             batch_size=self.batch_size,
             img_res=self.img_res,
@@ -81,7 +84,11 @@ class FeatureExtractor:
 
         # Get the filters as tensors
         self.filters_normalized, self.abs_filters = _create_filterbank(
-            N=kernel_size, sigma=self.sigma, device=self.device, steps=self.steps, perc=self.percent
+            N=kernel_size,
+            sigma=self.sigma,
+            device=self.device,
+            steps=self.steps,
+            perc=self.percent,
         )
 
         # Create image unfolder
