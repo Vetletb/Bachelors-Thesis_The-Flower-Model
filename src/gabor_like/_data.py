@@ -3,12 +3,12 @@ from torchvision.datasets import ImageFolder
 import torch
 import os
 
-FEATURES_FOLDER = "extracted_features"
+PREPROCESSEDS_FOLDER = "preprocessed_coeff"
 LABEL_RESULTS_FOLDER = "labels"
 
 
 def _prepare_output_folder(path: str):
-    features_path = os.path.join(path, FEATURES_FOLDER)
+    features_path = os.path.join(path, PREPROCESSEDS_FOLDER)
     labels_path = os.path.join(path, LABEL_RESULTS_FOLDER)
     os.makedirs(features_path, exist_ok=True)
     os.makedirs(labels_path, exist_ok=True)
@@ -33,7 +33,7 @@ def _create_dataloader(
 
 
 def _save_result(result: torch.Tensor, index: int, path: str):
-    features_path = os.path.join(path, FEATURES_FOLDER, f"{index}.pt")
+    features_path = os.path.join(path, PREPROCESSEDS_FOLDER, f"{index}.pt")
     torch.save(result, features_path)
 
 
@@ -45,3 +45,7 @@ def _save_result_labels(labels: torch.Tensor, index: int, path: str):
 def _save_labels(labels: list[str], path: str):
     labels_path = os.path.join(path, "classes.pt")
     torch.save(labels, labels_path)
+
+def _save_pooled(result: torch.Tensor, index: int, path: str):
+    pool_path = os.path.join(path, f"{index}.pt")
+    torch.save(result, pool_path)

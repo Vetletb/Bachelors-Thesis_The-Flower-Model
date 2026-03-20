@@ -1,10 +1,11 @@
 import os
 import torch
 
-from gabor_like.external._gabor_like_filters import _gabor_like_filters
-from gabor_like._kmeans import _spherical_kmeans
-from gabor_like._filterbank import _shift_filters
-
+from .external._gabor_like_filters import _gabor_like_filters
+from ._kmeans import _spherical_kmeans
+from ._filterbank import _shift_filters
+from ._data import _save_pooled
+from ._data import PREPROCESSEDS_FOLDER
 SPH_KMEANS_ITERS = 100
 
 
@@ -12,8 +13,9 @@ class CoeffProcessor:
     def __init__(self, path: str, img_res: int, sigma: float, k: int, f_steps: int, f_percent):
         self.f_steps = f_steps
         self.f_percent = f_percent
-        self.coeff_path = os.path.join(path, "extracted_features")
-        self.num_batches = len(os.listdir(self.coeff_path))
+        self.path = path
+        coeff_path = os.path.join(path, PREPROCESSEDS_FOLDER)
+        self.num_batches = len(os.listdir(coeff_path))
         self.img_res = img_res
         self.sigma = sigma
         self.k = k
@@ -85,3 +87,6 @@ class CoeffProcessor:
                 max_coeff[:, write_idx] = coeff_in_cluster.amax(dim=1)
                 write_idx += 1
                 del coeff_in_cluster
+            pool_path = os.path.join(self.path, f"maxpool_{steps}_{self.k}")
+            _save_pooled(max_coeff.cpu(), i, pool_path)
+            i += 1
