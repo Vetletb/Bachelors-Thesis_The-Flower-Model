@@ -9,20 +9,25 @@ from gabor_like._data import (
 from gabor_like._filterbank import _create_filterbank
 import torch
 import threading
+import os
 
 
-class FeatureExtractor:
+class CoeffPreProcessor:
     def __init__(
         self,
         dataset: str,
         img_res: int,
         sigma: float,
         batch_size: int,
+        steps: int,
+        percent: float,
     ):
         self.dataset = dataset
         self.img_res = img_res
         self.sigma = sigma
         self.batch_size = batch_size
+        self.steps = steps
+        self.percent = percent
 
         self.cv = threading.Condition()
 
@@ -30,19 +35,22 @@ class FeatureExtractor:
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
     def extract_to_disk(self, output_path: str):
-        self.output_path = output_path
-        _prepare_output_folder(output_path)
+        self.output_path = os.path.join(
+            output_path,
+            f"coeff_{self.img_res}_{self.sigma}_{self.steps}_{self.percent}",
+        )
+        _prepare_output_folder(self.output_path)
 
         self._setup()
 
         # Get a DataLoader object and information about the dataset
-        self.loader, classes, samples_len = _create_dataloader(
+        self.loader, classes = _create_dataloader(
             dataset=self.dataset,
             batch_size=self.batch_size,
             img_res=self.img_res,
         )
 
-        _save_labels(classes, output_path)
+        _save_labels(classes, self.output_path)
 
         # Record GPU memory for performance testing
         # if self.device.type == "cuda":
@@ -77,7 +85,11 @@ class FeatureExtractor:
 
         # Get the filters as tensors
         self.filters_normalized, self.abs_filters = _create_filterbank(
-            N=kernel_size, sigma=self.sigma, device=self.device
+            N=kernel_size,
+            sigma=self.sigma,
+            device=self.device,
+            steps=self.steps,
+            percent=self.percent,
         )
 
         # Create image unfolder
