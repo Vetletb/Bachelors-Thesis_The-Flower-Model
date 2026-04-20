@@ -178,7 +178,7 @@ class CoeffProcessor:
 
             if r_in_cluster.numel() == 0:
                 centroid_r_list.append(1)
-                centroid_pos_list(torch.tensor(self.img_res*2, self.img_res*2), device = self.device)
+                centroid_pos_list.append(torch.tensor(self.img_res*2, self.img_res*2), device = self.device)
             else:
                 centroid_r_list.append(torch.mean(r_in_cluster))
                 centroid_pos_list.append(torch.mean(pos_in_cluster, dim=0))
