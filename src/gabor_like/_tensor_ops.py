@@ -7,7 +7,7 @@ def _cosine_similarity(
     """
     Compute cosine similarity between real/imag filters and image patches.
 
-    Performs per-filter dot product via normalized image pathches onto filters,
+    Performs per-filter dot product via normalized image patches onto filters,
     scaled by filter magnitude for weighted similarity.
 
     Args:
@@ -54,7 +54,7 @@ def _cosine_similarity(
 
         current_b /= b_norm.view(batch_size, 1, patch_size)
 
-        # Calculate cosine simularity and save result
+        # Calculate cosine similarity and save result
         cos_sim[:, i * 2 : i * 2 + 2, :] = current_filters @ current_b
 
         del current_b

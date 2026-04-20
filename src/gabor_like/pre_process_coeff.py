@@ -1,4 +1,4 @@
-from ._math import _cosine_similarity
+from ._tensor_ops import _cosine_similarity
 from ._data import (
     _create_dataloader,
     _save_result,
@@ -153,7 +153,7 @@ class CoeffPreProcessor:
 
     def _producer(self, device):
         """
-        Extracts coefficents for batches and makes them available for consumer.
+        Extracts coefficients for batches and makes them available for consumer.
     
         Iterates dataloader, unfolds images into patches, computes cosine similarity
         with normalized filters, and enqueues results for consumer thread.

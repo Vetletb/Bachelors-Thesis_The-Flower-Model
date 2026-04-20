@@ -72,7 +72,7 @@ def _shift_filters(
         shifted_filters: Shape (num_filters * grid_size^2, box_size, box_size).
             Padded filter copies with zero-padding for out-of-bounds positions.
         shifted_pos: Shape (num_filters * grid_size^2, 2).
-            (y_offset, x_offset) for each shifted filter, relative to image.
+            (x_offset, y_offset) for each shifted filter, relative to image.
     """
     filter_amount = filters.size(dim=0)
     N = filters.size(dim=1)
