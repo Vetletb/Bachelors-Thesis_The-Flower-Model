@@ -1,26 +1,42 @@
-from gabor_like._cosine_similarity import _cosine_similarity
-from gabor_like._data import (
+from ._math import _cosine_similarity
+from ._data import (
     _create_dataloader,
     _save_result,
     _save_result_labels,
     _prepare_output_folder,
     _save_labels,
 )
-from gabor_like._filterbank import _create_filterbank
+from ._filterbank import _create_filterbank
 import torch
 import threading
 import os
 
 
 class CoeffPreProcessor:
+    """
+    Preprocesses the dataset by using a predefined filterbank. Saves all coefficients extracted from the dataset to disk.
+
+    Args:
+        dataset: Path of dataset folder.
+        img_res: The resolution the images gets scaled to.
+        sigma: Sigma used for generating filters.
+        steps: How many filter sizes of same rotation gets generated.
+        percent: Determines minimum filter size. Between 0-1.
+        batch_size: Batch size of the images being processed at a time.
+
+    Notes:
+        Dataset needs to be structured like this (images does not need to be .png):
+        root/classname/image.png
+    """
+
     def __init__(
         self,
         dataset: str,
         img_res: int,
         sigma: float,
-        batch_size: int,
         steps: int,
         percent: float,
+        batch_size: int,
     ):
         self.dataset = dataset
         self.img_res = img_res
@@ -34,7 +50,18 @@ class CoeffPreProcessor:
         # Select device to run tensors on: CPU or CUDA
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-    def extract_to_disk(self, output_path: str):
+    def preprocess(self, output_path: str):
+        """
+        Preprocesses the dataset by using a predefined filterbank.
+        Saves all coefficients extracted from the dataset to disk.
+
+        Args:
+            output_path: Folder for storing the coefficients, labels and classnames.
+
+        Notes:
+            Recommended to use same output folder for same dataset, but different parameters.
+            Different datasets should have different output folders.
+        """
         self.output_path = os.path.join(
             output_path,
             f"coeff_{self.img_res}_{self.sigma}_{self.steps}_{self.percent}",
@@ -42,15 +69,6 @@ class CoeffPreProcessor:
         _prepare_output_folder(self.output_path)
 
         self._setup()
-
-        # Get a DataLoader object and information about the dataset
-        self.loader, classes = _create_dataloader(
-            dataset=self.dataset,
-            batch_size=self.batch_size,
-            img_res=self.img_res,
-        )
-
-        _save_labels(classes, self.output_path)
 
         # Record GPU memory for performance testing
         # if self.device.type == "cuda":
@@ -60,7 +78,7 @@ class CoeffPreProcessor:
         consumer = threading.Thread(target=self._consumer, daemon=True)
         consumer.start()
 
-        # Start producing extracted features
+        # Start producing extracted coefficients
         self._producer(self.device)
 
         # Wait for consumer to finish writing
@@ -97,7 +115,23 @@ class CoeffPreProcessor:
             kernel_size=(kernel_size, kernel_size), padding=padding
         )
 
+        # Get a DataLoader object and information about the dataset
+        self.loader, classes = _create_dataloader(
+            dataset=self.dataset,
+            batch_size=self.batch_size,
+            img_res=self.img_res,
+        )
+
+        _save_labels(classes, self.output_path)
+
     def _consumer(self):
+        """
+        Write coefficient batches to disk sequentially.
+    
+        Waits for producer to set work_available, saves self.results and 
+        self.result_labels, signals producer to continue. Exits when producer
+        signals self.done.
+        """
         file_index = 0
 
         while True:
@@ -118,17 +152,28 @@ class CoeffPreProcessor:
                 self.cv.notify_all()
 
     def _producer(self, device):
+        """
+        Extracts coefficents for batches and makes them available for consumer.
+    
+        Iterates dataloader, unfolds images into patches, computes cosine similarity
+        with normalized filters, and enqueues results for consumer thread.
+        Synchronizes via self.cv to avoid overwriting unsaved batches.
+        
+        Args:
+            device: Torch device for tensor placement
+        """
         for images, labels in self.loader:
             images = images.to(device)
 
             # Extract sliding blocks from batched images
             unfolded_img = self.unfold(images)
 
-            # Calculate cosine_similarity between unfolded image and filters, result is extracted features
+            # Calculate cosine similarity between unfolded image and filters, result is extracted ceofficients
             coeff = _cosine_similarity(
                 self.filters_normalized, unfolded_img, self.abs_filters
             )
 
+            # Waits for consumer, then makes current batch available
             with self.cv:
                 while self.work_available:
                     self.cv.wait()
