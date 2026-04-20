@@ -136,7 +136,8 @@ class CoeffProcessor:
         filters = filters.view(filters.size(dim=0), -1)
 
         # Match filter radiuses with shifted filters
-        filter_r = filter_r.repeat((steps * 2) ** 2)
+        shift_count = filters.size(dim=0) // self.filters_amount
+        filter_r = filter_r.repeat(shift_count)
 
         self.shifted_filters_amount = filters.size(dim=0)
 
@@ -175,8 +176,12 @@ class CoeffProcessor:
             r_in_cluster = self.filter_r[cluster_mask]
             pos_in_cluster = self.filter_pos[cluster_mask]
 
-            centroid_r_list.append(torch.mean(r_in_cluster))
-            centroid_pos_list.append(torch.mean(pos_in_cluster, dim=0))
+            if r_in_cluster.numel() == 0:
+                centroid_r_list.append(1)
+                centroid_pos_list(torch.tensor(self.img_res*2, self.img_res*2), device = self.device)
+            else:
+                centroid_r_list.append(torch.mean(r_in_cluster))
+                centroid_pos_list.append(torch.mean(pos_in_cluster, dim=0))
 
         centroids_r = torch.hstack(centroid_r_list)
         centroids_pos = torch.stack(centroid_pos_list)
