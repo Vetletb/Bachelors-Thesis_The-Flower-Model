@@ -177,8 +177,8 @@ class CoeffProcessor:
             pos_in_cluster = self.filter_pos[cluster_mask]
 
             if r_in_cluster.numel() == 0:
-                centroid_r_list.append(1)
-                centroid_pos_list.append(torch.tensor(self.img_res*2, self.img_res*2), device = self.device)
+                centroid_r_list.append(torch.tensor([-1], device=self.device))
+                centroid_pos_list.append(torch.tensor([self.img_res*2, self.img_res*2], device = self.device))
             else:
                 centroid_r_list.append(torch.mean(r_in_cluster))
                 centroid_pos_list.append(torch.mean(pos_in_cluster, dim=0))
@@ -187,9 +187,9 @@ class CoeffProcessor:
         centroids_pos = torch.stack(centroid_pos_list)
 
         # Masks for low, mid and high frequency centroids
-        low_freq_mask = centroids_r < self.low_freq_upper
-        mid_freq_mask = (centroids_r > self.low_freq_upper) & (
-            centroids_r < self.high_freq_lower
+        low_freq_mask = (centroids_r >= 0) & (centroids_r < self.low_freq_upper)
+        mid_freq_mask = (centroids_r >= self.low_freq_upper) & (
+            centroids_r <= self.high_freq_lower
         )
         high_freq_mask = centroids_r > self.high_freq_lower
 
