@@ -8,10 +8,10 @@ import os
 def test_cluster_sets_correct_order(i, monkeypatch):
     monkeypatch.setattr(os, "listdir", lambda path: ["a"])
     processor = gabor_like.CoeffProcessor("path", 4, 1.0, 2, 1.0)
+    processor.device = "cpu"
 
     processor.cluster(4)
 
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     expected_position = torch.tensor(
         [
             [0, 0],
@@ -32,7 +32,6 @@ def test_cluster_sets_correct_order(i, monkeypatch):
             [3, 3],
         ],
         dtype=torch.float32,
-        device=device,
     )
 
     actual_position = processor.filter_pos
@@ -45,6 +44,7 @@ def test_cluster_sets_correct_order(i, monkeypatch):
 def test_eye_labels_returns_correct_values(monkeypatch):
     monkeypatch.setattr(os, "listdir", lambda path: ["a"])
     processor = gabor_like.CoeffProcessor("path", 4, 1.0, 4, 1.0)
+    processor.device = "cpu"
 
     processor.img_res = 4
     processor.low_freq_upper = 0.6
@@ -53,17 +53,13 @@ def test_eye_labels_returns_correct_values(monkeypatch):
     processor.k_around_eye = 1
     processor.k = 5
 
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-
-    processor.filter_r = torch.tensor(
-        [0.25, 0.5, 0.75, 1.0], device=device
-    ).repeat_interleave(4)
+    processor.filter_r = torch.tensor([0.25, 0.5, 0.75, 1.0]).repeat_interleave(4)
     processor.filter_pos = torch.tensor(
-        [[2, 1], [1, 2], [2, 0], [3, 0]], dtype=torch.float32, device=device
+        [[2, 1], [1, 2], [2, 0], [3, 0]], dtype=torch.float32
     ).repeat(4, 1)
 
     processor.cluster_labels = torch.tensor(
-        [4, 4, 3, 2, 4, 4, 3, 2, 1, 1, 3, 2, 2, 1, 0, 0], device=device
+        [4, 4, 3, 2, 4, 4, 3, 2, 1, 1, 3, 2, 2, 1, 0, 0]
     )
 
     result = processor._eye_labels()

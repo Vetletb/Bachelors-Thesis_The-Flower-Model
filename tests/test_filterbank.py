@@ -1,19 +1,14 @@
-import pytest
 import gabor_like._filterbank as fb
 import torch
 
 
 def test_shift_filters_returns_correct_value():
     a = torch.arange(1, 3 * 3 * 2 + 1).view(2, 3, 3)
-    print(a)
 
     even = True
     offset = 1 if even else 0
 
     shifted, position = fb._shift_filters(a, 2, 3 + offset)
-
-    print(shifted.shape)
-    print(position.shape)
 
     expected_shifted_1 = torch.tensor(
         [
