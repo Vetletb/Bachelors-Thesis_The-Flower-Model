@@ -50,6 +50,7 @@ class CoeffProcessor:
         k_around_eye: int,
         low_freq_upper: float,
         high_freq_lower: float,
+        augment: bool,
         augment_seed: int | None = None,
     ):
         """
@@ -62,6 +63,7 @@ class CoeffProcessor:
             k_around_eye: Number of nearest clusters to keep per frequency band.
             low_freq_upper: Upper threshold for low-frequency centroid radius.
             high_freq_lower: Lower threshold for high-frequency centroid radius.
+            augment: Toggles if the coefficients should be augemted before they are processed
             augment_seed: Optional seed for reproducible random augmentations.
         """
         self.k_around_eye = k_around_eye
@@ -77,7 +79,7 @@ class CoeffProcessor:
 
         pool_path = os.path.join(
             self.path,
-            f"maxpool_{self.k}_{k_around_eye}_{low_freq_upper}_{high_freq_lower}",
+            f"maxpool_{self.k}_{k_around_eye}_{low_freq_upper}_{high_freq_lower}{"_augmented" if augment else "_unaugmented"}",
         )
         _prepare_folder(pool_path)
         pooled_label_path = os.path.join(pool_path, LABEL_RESULTS_FOLDER)
@@ -95,9 +97,11 @@ class CoeffProcessor:
             current_labels = torch.load(os.path.join(self.label_path, f"{i}.pt"))
             current_batch = current_batch.to(self.device)
             current_labels = current_labels.to(self.device)
-            current_batch, current_labels = self._augment_batch(
-                current_batch, current_labels, augment_rng
-            )
+
+            if(augment):
+                current_batch, current_labels = self._augment_batch(
+                    current_batch, current_labels, augment_rng
+                )
 
             # Take absolute values to account for inverse filters
             current_batch = current_batch.abs()
