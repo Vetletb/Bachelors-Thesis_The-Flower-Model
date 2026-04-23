@@ -199,7 +199,7 @@ class CoeffProcessor:
         high_freq_mask = centroids_r > self.high_freq_lower
 
         # Place eye in center of image and calculate centroid distances
-        eye_pos = torch.tensor([self.N / 2, self.N / 2], device=self.device)
+        eye_pos = torch.tensor([self.img_res / 2, self.img_res / 2], device=self.device)
         pos_diff = centroids_pos - eye_pos
         centroid_distance = torch.linalg.vector_norm(pos_diff, dim=1)
 
