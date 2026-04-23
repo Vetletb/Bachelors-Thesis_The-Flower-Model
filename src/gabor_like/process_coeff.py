@@ -24,6 +24,7 @@ class CoeffProcessor:
     Notes:
         sigma, f_steps and f_percent needs to be the same as used for preprocessor.
     """
+
     def __init__(
         self,
         path: str,
@@ -62,9 +63,11 @@ class CoeffProcessor:
         eye = self._eye_labels()
 
         # repeat cluster labels to match coefficients, one complex filter gives two filters (real/imag)
-        cluster_labels_exp = self.cluster_labels.view(
-            -1, self.img_res * self.img_res
-        ).repeat(1, 2).view(-1)
+        cluster_labels_exp = (
+            self.cluster_labels.view(-1, self.img_res * self.img_res)
+            .repeat(1, 2)
+            .view(-1)
+        )
 
         pool_path = os.path.join(
             self.path,
@@ -81,9 +84,7 @@ class CoeffProcessor:
             current_batch = current_batch.abs()
 
             current_batch_size = current_batch.size(dim=0)
-            current_batch = current_batch.view(
-                current_batch_size, -1
-            )
+            current_batch = current_batch.view(current_batch_size, -1)
 
             max_coeff = torch.empty(
                 (current_batch_size, k_around_eye * 3),
@@ -178,7 +179,11 @@ class CoeffProcessor:
 
             if r_in_cluster.numel() == 0:
                 centroid_r_list.append(torch.tensor([-1], device=self.device))
-                centroid_pos_list.append(torch.tensor([self.img_res*2, self.img_res*2], device = self.device))
+                centroid_pos_list.append(
+                    torch.tensor(
+                        [self.img_res * 2, self.img_res * 2], device=self.device
+                    )
+                )
             else:
                 centroid_r_list.append(torch.mean(r_in_cluster))
                 centroid_pos_list.append(torch.mean(pos_in_cluster, dim=0))

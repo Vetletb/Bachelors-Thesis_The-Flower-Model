@@ -42,7 +42,7 @@ def _create_dataloader(
     Build a dataloader of scaled grayscale images.
 
     Args:
-        dataset: Root folder of image dataset. Dataset needs to be structured 
+        dataset: Root folder of image dataset. Dataset needs to be structured
         like this (images does not need to be .png):
         root/classname/image.png
         batch_size: Number of samples per batch.
