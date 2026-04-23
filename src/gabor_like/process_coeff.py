@@ -61,10 +61,10 @@ class CoeffProcessor:
 
         eye = self._eye_labels()
 
-        # interleave cluster labels to match coefficients, one filter gives two coeffs (real/imag)
+        # repeat cluster labels to match coefficients, one complex filter gives two filters (real/imag)
         cluster_labels_exp = self.cluster_labels.view(
             -1, self.img_res * self.img_res
-        ).repeat_interleave(2)
+        ).repeat(1, 2).view(-1)
 
         pool_path = os.path.join(
             self.path,
