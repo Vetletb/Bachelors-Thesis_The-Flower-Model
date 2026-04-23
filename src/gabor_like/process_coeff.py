@@ -183,7 +183,7 @@ class CoeffProcessor:
                 )
                 centroid_pos_list.append(
                     torch.tensor(
-                        [self.img_res * 2, self.img_res * 2],
+                        [(self.img_res - 1) * 2, (self.img_res - 1) * 2],
                         device=self.device,
                         dtype=self.filter_pos.dtype,
                     )

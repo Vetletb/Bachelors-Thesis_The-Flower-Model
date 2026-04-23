@@ -81,6 +81,7 @@ def test_process_correctly_max_pools_coefficients(monkeypatch):
     monkeypatch.setattr(os, "listdir", lambda path: ["a"])
 
     processor = gabor_like.CoeffProcessor("path", 3, 1.0, 4, 1.0)
+    processor.device = "cpu"
     processor.cluster_labels = torch.tensor(
         [0, 3, 2, 1, 2, 3, 2, 1, 0, 1, 4, 3, 2, 3, 4, 3, 2, 1]
     )
