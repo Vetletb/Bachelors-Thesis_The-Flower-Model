@@ -1,8 +1,10 @@
 from ._tensor_ops import _cosine_similarity
 from ._data import (
     _create_dataloader,
-    _save_result,
-    _save_result_labels,
+    _save_train_result,
+    _save_train_result_labels,
+    _save_test_result,
+    _save_test_result_labels,
     _prepare_output_folder,
     _save_labels,
 )
@@ -116,7 +118,7 @@ class CoeffPreProcessor:
         )
 
         # Get a DataLoader object and information about the dataset
-        self.loader, classes = _create_dataloader(
+        self.trainloader, self.testloader, classes = _create_dataloader(
             dataset=self.dataset,
             batch_size=self.batch_size,
             img_res=self.img_res,
@@ -132,7 +134,8 @@ class CoeffPreProcessor:
         self.result_labels, signals producer to continue. Exits when producer
         signals self.done.
         """
-        file_index = 0
+        train_file_index = 0
+        test_file_index = 0
 
         while True:
             with self.cv:
@@ -141,13 +144,21 @@ class CoeffPreProcessor:
 
                 if not self.work_available and self.done:
                     break
+                    
+                if self.loader_idx == 0:
+                    _save_train_result(self.results, train_file_index, self.output_path)
+                    _save_train_result_labels(self.result_labels, train_file_index, self.output_path)
+                    train_file_index += 1
+                    print(train_file_index)
 
-                _save_result(self.results, file_index, self.output_path)
-                _save_result_labels(self.result_labels, file_index, self.output_path)
+                else:
+                    _save_test_result(self.results, test_file_index, self.output_path)
+                    _save_test_result_labels(self.result_labels, test_file_index, self.output_path)
+                    test_file_index += 1
+                    print(test_file_index)
 
                 self.work_available = False
-                print(file_index)
-                file_index += 1
+            
 
                 self.cv.notify_all()
 
@@ -162,26 +173,30 @@ class CoeffPreProcessor:
         Args:
             device: Torch device for tensor placement
         """
-        for images, labels in self.loader:
-            images = images.to(device)
+        self.loader_idx = 0
+        for loader in [self.trainloader, self.testloader]:
+            for images, labels in loader:
+                images = images.to(device)
 
-            # Extract sliding blocks from batched images
-            unfolded_img = self.unfold(images)
+                # Extract sliding blocks from batched images
+                unfolded_img = self.unfold(images)
 
-            # Calculate cosine similarity between unfolded image and filters, result is extracted ceofficients
-            coeff = _cosine_similarity(
-                self.filters_normalized, unfolded_img, self.abs_filters
-            )
+                # Calculate cosine similarity between unfolded image and filters, result is extracted ceofficients
+                coeff = _cosine_similarity(
+                    self.filters_normalized, unfolded_img, self.abs_filters
+                )
 
-            # Waits for consumer, then makes current batch available
-            with self.cv:
-                while self.work_available:
-                    self.cv.wait()
-                self.results = coeff.to("cpu", non_blocking=True).clone()
-                self.result_labels = labels.clone()
-                self.work_available = True
-                self.cv.notify_all()
-            del coeff, unfolded_img
+                # Waits for consumer, then makes current batch available
+                with self.cv:
+                    while self.work_available:
+                        self.cv.wait()
+                    self.results = coeff.to("cpu", non_blocking=True).clone()
+                    self.result_labels = labels.clone()
+                    self.work_available = True
+                    self.cv.notify_all()
+                del coeff, unfolded_img
+
+            self.loader_idx += 1
 
         with self.cv:
             self.done = True
