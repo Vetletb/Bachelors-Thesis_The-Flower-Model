@@ -178,10 +178,12 @@ class CoeffProcessor:
             pos_in_cluster = self.filter_pos[cluster_mask]
 
             if r_in_cluster.numel() == 0:
-                centroid_r_list.append(torch.tensor([-1], device=self.device))
+                centroid_r_list.append(torch.tensor(-1, device=self.device, dtype=r_in_cluster.dtype))
                 centroid_pos_list.append(
                     torch.tensor(
-                        [self.img_res * 2, self.img_res * 2], device=self.device
+                        [self.img_res * 2, self.img_res * 2],
+                        device=self.device,
+                        dtype=self.filter_pos.dtype,
                     )
                 )
             else:
