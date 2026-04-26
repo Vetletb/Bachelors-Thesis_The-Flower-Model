@@ -190,13 +190,17 @@ class CoeffPreProcessor:
                 with self.cv:
                     while self.work_available:
                         self.cv.wait()
-                    self.results = coeff.to("cpu", non_blocking=True).clone()
+                    self.results = coeff.cpu().clone()
                     self.result_labels = labels.clone()
                     self.work_available = True
                     self.cv.notify_all()
                 del coeff, unfolded_img
 
-            self.loader_idx += 1
+            # Waits for consumer to finish before changing loader
+            with self.cv:
+                while self.work_available:
+                    self.cv.wait()
+                self.loader_idx += 1
 
         with self.cv:
             self.done = True
