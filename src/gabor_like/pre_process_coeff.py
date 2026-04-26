@@ -129,8 +129,8 @@ class CoeffPreProcessor:
     def _consumer(self):
         """
         Write coefficient batches to disk sequentially.
-    
-        Waits for producer to set work_available, saves self.results and 
+
+        Waits for producer to set work_available, saves self.results and
         self.result_labels, signals producer to continue. Exits when producer
         signals self.done.
         """
@@ -165,11 +165,11 @@ class CoeffPreProcessor:
     def _producer(self, device):
         """
         Extracts coefficients for batches and makes them available for consumer.
-    
+
         Iterates dataloader, unfolds images into patches, computes cosine similarity
         with normalized filters, and enqueues results for consumer thread.
         Synchronizes via self.cv to avoid overwriting unsaved batches.
-        
+
         Args:
             device: Torch device for tensor placement
         """
