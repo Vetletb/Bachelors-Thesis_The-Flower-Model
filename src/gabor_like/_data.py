@@ -20,8 +20,8 @@ def _prepare_output_folder(path: str):
     Args:
         path: Root output directory.
     """
-    train_path = os.path.join(path, 'train')
-    test_path = os.path.join(path, 'test')
+    train_path = os.path.join(path, "train")
+    test_path = os.path.join(path, "test")
 
     train_preprocessed_path = os.path.join(train_path, PREPROCESSED_FOLDER)
     train_labels_path = os.path.join(train_path, LABEL_RESULTS_FOLDER)
@@ -54,7 +54,7 @@ def _create_dataloader(
     dataset: str, batch_size: int, img_res: int
 ) -> tuple[torch.utils.data.DataLoader, list[str]]:
     """
-    Build a dataloader of scaled grayscale images.
+    Build two dataloaders for test and train of scaled grayscale images.
 
     Args:
         dataset: Root folder of image dataset. Dataset needs to be structured
@@ -64,7 +64,8 @@ def _create_dataloader(
         img_res: Target width and height in pixels.
 
     Returns:
-        loader: DataLoader with shuffle disabled and pin_memory enabled.
+        trian_loader: DataLoader for train set with shuffle disabled and pin_memory enabled.
+        test_loader: DataLoader for test set with shuffle disabled and pin_memory enabled.
         classes: List of class names in index order.
     """
     transform = transforms.Compose(
@@ -96,7 +97,7 @@ def _save_train_result(result: torch.Tensor, index: int, path: str):
         index: batch index used as filename stem.
         path: Root output directory.
     """
-    features_path = os.path.join(path, 'train', PREPROCESSED_FOLDER, f"{index}.pt")
+    features_path = os.path.join(path, "train", PREPROCESSED_FOLDER, f"{index}.pt")
     torch.save(result, features_path)
 
 
@@ -109,8 +110,11 @@ def _save_train_result_labels(labels: torch.Tensor, index: int, path: str):
         index: batch index used as filename stem.
         path: Root output directory.
     """
-    label_results_path = os.path.join(path, 'train', LABEL_RESULTS_FOLDER, f"{index}.pt")
+    label_results_path = os.path.join(
+        path, "train", LABEL_RESULTS_FOLDER, f"{index}.pt"
+    )
     torch.save(labels, label_results_path)
+
 
 def _save_test_result(result: torch.Tensor, index: int, path: str):
     """
@@ -121,7 +125,7 @@ def _save_test_result(result: torch.Tensor, index: int, path: str):
         index: batch index used as filename stem.
         path: Root output directory.
     """
-    features_path = os.path.join(path, 'test', PREPROCESSED_FOLDER, f"{index}.pt")
+    features_path = os.path.join(path, "test", PREPROCESSED_FOLDER, f"{index}.pt")
     torch.save(result, features_path)
 
 
@@ -134,7 +138,7 @@ def _save_test_result_labels(labels: torch.Tensor, index: int, path: str):
         index: batch index used as filename stem.
         path: Root output directory.
     """
-    label_results_path = os.path.join(path, 'test', LABEL_RESULTS_FOLDER, f"{index}.pt")
+    label_results_path = os.path.join(path, "test", LABEL_RESULTS_FOLDER, f"{index}.pt")
     torch.save(labels, label_results_path)
 
 

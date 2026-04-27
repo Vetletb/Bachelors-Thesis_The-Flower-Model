@@ -56,6 +56,7 @@ class CoeffPreProcessor:
         """
         Preprocesses the dataset by using a predefined filterbank.
         Saves all coefficients extracted from the dataset to disk.
+        Automatically seperates the dataset to train and test set with 80/20 split.
 
         Args:
             output_path: Folder for storing the coefficients, labels and classnames.
@@ -144,21 +145,24 @@ class CoeffPreProcessor:
 
                 if not self.work_available and self.done:
                     break
-                    
+
                 if self.loader_idx == 0:
                     _save_train_result(self.results, train_file_index, self.output_path)
-                    _save_train_result_labels(self.result_labels, train_file_index, self.output_path)
+                    _save_train_result_labels(
+                        self.result_labels, train_file_index, self.output_path
+                    )
                     train_file_index += 1
                     print(train_file_index)
 
                 else:
                     _save_test_result(self.results, test_file_index, self.output_path)
-                    _save_test_result_labels(self.result_labels, test_file_index, self.output_path)
+                    _save_test_result_labels(
+                        self.result_labels, test_file_index, self.output_path
+                    )
                     test_file_index += 1
                     print(test_file_index)
 
                 self.work_available = False
-            
 
                 self.cv.notify_all()
 
