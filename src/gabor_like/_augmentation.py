@@ -23,10 +23,10 @@ def _mix_augment_coeff(
     augmented = augmented.repeat(1, aug_amount, 1, 1, 1)
 
     translate = torch.normal(
-        0.0, img_res * 0.2, (aug_amount * image_amount, 2)
+        0.0, img_res * 0.05, (aug_amount * image_amount, 2)
     ).tolist()
     scale = (
-        torch.normal(1.0, 0.25, (aug_amount * image_amount,)).clamp(min=0.1).tolist()
+        torch.normal(1.0, 0.05, (aug_amount * image_amount,)).clamp(min=0.1).tolist()
     )
 
     for i in range(image_amount):
@@ -64,10 +64,10 @@ def _augment_coeff(coeffs: torch.Tensor, aug_amount: int, img_res: int):
     augmented = augmented.repeat(1, aug_amount * 2 + 2, 1, 1, 1)
 
     translate = torch.normal(
-        0.0, img_res * 0.2, size=(aug_amount * image_amount, 2)
+        0.0, img_res * 0.1, size=(aug_amount * image_amount, 2)
     ).tolist()
     scale = (
-        torch.normal(1.0, 0.2, size=(aug_amount * image_amount,))
+        torch.normal(1.0, 0.1, size=(aug_amount * image_amount,))
         .clamp(min=0.1)
         .tolist()
     )
