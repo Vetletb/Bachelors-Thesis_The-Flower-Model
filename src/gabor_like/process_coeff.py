@@ -1,12 +1,12 @@
 import os
 import torch
-from torchvision.transforms import v2
 
 from .external._gabor_like_filters import _gabor_like_filters
 from ._clustering import _spherical_kmeans
 from ._filterbank import _shift_filters
 from ._data import _save_pooled, _prepare_folder
 from ._data import PREPROCESSED_FOLDER, LABEL_RESULTS_FOLDER
+from ._augmentation import _mix_augment_coeff
 
 SPH_KMEANS_ITERS = 25
 
@@ -51,8 +51,7 @@ class CoeffProcessor:
         k_around_eye: int,
         low_freq_upper: float,
         high_freq_lower: float,
-        augment: bool,
-        augment_seed: int | None = None,
+        aug_amount: int = 0,
     ):
         """
         Max-pool coefficients from center-near clusters across frequency bands. Saves result in `path`
@@ -60,12 +59,13 @@ class CoeffProcessor:
         Chooses `k_around_eye` clusters nearest image center for each band:
         low frequency, mid frequency, high frequency.
 
+        Images can be augmented be setting the `aug_amount` param
+
         Args:
             k_around_eye: Number of nearest clusters to keep per frequency band.
             low_freq_upper: Upper threshold for low-frequency centroid radius.
             high_freq_lower: Lower threshold for high-frequency centroid radius.
-            augment: Toggles if the coefficients should be augemted before they are processed
-            augment_seed: Optional seed for reproducible random augmentations.
+            aug_amount: How many times the images gets augmented.
         """
         self.k_around_eye = k_around_eye
         self.low_freq_upper = low_freq_upper
@@ -82,38 +82,34 @@ class CoeffProcessor:
 
         pool_path = os.path.join(
             self.path,
-            f"maxpool_{self.k}_{k_around_eye}_{low_freq_upper}_{high_freq_lower}{"_augmented" if augment else "_unaugmented"}",
+            f"maxpool_{self.k}_{k_around_eye}_{low_freq_upper}_{high_freq_lower}_{aug_amount}",
         )
         _prepare_folder(pool_path)
-        pooled_label_path = os.path.join(pool_path, LABEL_RESULTS_FOLDER)
-        _prepare_folder(pooled_label_path)
 
-        augment_rng = None
-        if augment_seed is not None:
-            augment_rng = torch.Generator()
-            augment_rng.manual_seed(augment_seed)
+        var_amount = aug_amount if aug_amount > 0 else 1
 
         for i in range(self.num_batches):
-            print(i)
+            print(1)
             # Load the preprocessed coeffs
             current_batch = torch.load(os.path.join(self.coeff_path, f"{i}.pt"))
-            current_labels = torch.load(os.path.join(self.label_path, f"{i}.pt"))
             current_batch = current_batch.to(self.device)
-            current_labels = current_labels.to(self.device)
-
-            if(augment):
-                current_batch, current_labels = self._augment_batch(
-                    current_batch, current_labels, augment_rng
-                )
 
             # Take absolute values to account for inverse filters
             current_batch = current_batch.abs()
 
             current_batch_size = current_batch.size(dim=0)
-            current_batch = current_batch.view(current_batch_size, -1)
+
+            # Augment coefficients
+            if aug_amount > 0:
+                current_batch = _mix_augment_coeff(
+                    current_batch, aug_amount, self.img_res
+                )
+                current_batch = current_batch.view(current_batch_size, aug_amount, -1)
+            else:
+                current_batch = current_batch.view(current_batch_size, 1, -1)
 
             max_coeff = torch.empty(
-                (current_batch_size, k_around_eye * 3),
+                (current_batch_size, var_amount, k_around_eye * 3),
                 device=self.device,
             )
 
@@ -121,102 +117,12 @@ class CoeffProcessor:
             write_idx = 0
             for j in eye:
                 mask = cluster_labels_exp == j
-                coeff_in_cluster = current_batch[:, mask]
-                max_coeff[:, write_idx] = coeff_in_cluster.amax(dim=1)
+                coeff_in_cluster = current_batch[:, :, mask]
+                max_coeff[:, :, write_idx] = coeff_in_cluster.amax(dim=2)
                 write_idx += 1
                 del coeff_in_cluster
 
             _save_pooled(max_coeff.cpu(), i, pool_path)
-            _save_pooled(current_labels.cpu(), i, pooled_label_path)
-
-    def _augment_batch(
-        self,
-        current_batch: torch.Tensor,
-        current_labels: torch.Tensor,
-        rng: torch.Generator | None = None,
-    ) -> tuple[torch.Tensor, torch.Tensor]:
-        """
-        Expand a coefficient batch with random mixed geometric transforms.
-
-        Returns original plus three independently randomized variants,
-        and duplicates labels in the same order to preserve alignment.
-        """
-
-        batch_size, channels, _ = current_batch.shape
-        batch_2d = current_batch.view(batch_size, channels, self.img_res, self.img_res)
-
-        aug1 = self._random_mix_augment(batch_2d, rng)
-        aug2 = self._random_mix_augment(batch_2d, rng)
-        aug3 = self._random_mix_augment(batch_2d, rng)
-
-        augmented_batch = torch.cat(
-            [
-                batch_2d,
-                aug1,
-                aug2,
-                aug3,
-            ],
-            dim=0,
-        )
-        augmented_labels = torch.cat(
-            [current_labels, current_labels, current_labels, current_labels], dim=0
-        )
-
-        return augmented_batch.view(-1, channels, self.img_res*self.img_res), augmented_labels
-
-    def _random_mix_augment(
-        self, batch_2d: torch.Tensor, rng: torch.Generator | None
-    ) -> torch.Tensor:
-        """
-        Apply a random composition of flip, scale and translate to a batch.
-        """
-        ops = ["flip", "scale", "translate"]
-        order = torch.randperm(len(ops), generator=rng).tolist()
-
-        selected = []
-        for idx in order:
-            if torch.rand((), generator=rng).item() < 0.5:
-                selected.append(ops[idx])
-
-        if not selected:
-            selected = [ops[order[0]]]
-
-        transformed = batch_2d
-        max_translate = max(1, int(round(self.img_res * 0.05)))
-
-        for op in selected:
-            if op == "flip":
-                transformed = v2.functional.horizontal_flip(transformed)
-                continue
-
-            if op == "scale":
-                scale = torch.empty(1).uniform_(0.9, 1.1, generator=rng).item()
-                transformed = v2.functional.affine(
-                    transformed,
-                    angle=0.0,
-                    translate=[0, 0],
-                    scale=scale,
-                    shear=[0.0, 0.0],
-                )
-                continue
-
-            tx = int(
-                torch.randint(-max_translate, max_translate + 1, (1,), generator=rng)
-                .item()
-            )
-            ty = int(
-                torch.randint(-max_translate, max_translate + 1, (1,), generator=rng)
-                .item()
-            )
-            transformed = v2.functional.affine(
-                transformed,
-                angle=0.0,
-                translate=[tx, ty],
-                scale=1.0,
-                shear=[0.0, 0.0],
-            )
-
-        return transformed
 
     def cluster(self, k):
         """
