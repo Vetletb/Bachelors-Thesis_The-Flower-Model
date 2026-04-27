@@ -52,7 +52,7 @@ def _prepare_folder(path: str):
 
 def _create_dataloader(
     dataset: str, batch_size: int, img_res: int
-) -> tuple[torch.utils.data.DataLoader, list[str]]:
+) -> tuple[torch.utils.data.DataLoader, torch.utils.data.DataLoader, list[str]]:
     """
     Build two dataloaders for test and train of scaled grayscale images.
 
@@ -64,7 +64,7 @@ def _create_dataloader(
         img_res: Target width and height in pixels.
 
     Returns:
-        trian_loader: DataLoader for train set with shuffle disabled and pin_memory enabled.
+        train_loader: DataLoader for train set with shuffle disabled and pin_memory enabled.
         test_loader: DataLoader for test set with shuffle disabled and pin_memory enabled.
         classes: List of class names in index order.
     """

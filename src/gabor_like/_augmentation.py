@@ -15,7 +15,7 @@ def _mix_augment_coeff(
         img_res: Resolution of the images.
 
     Returns:
-        augmented: new tensor of shape (images, aug_amount ,filters, coeffs).
+        augmented: new tensor of shape (images, aug_amount , filters, img_res, img_res).
         Adds a new dimention for the augmented images.
     """
     image_amount, filter_amount, _ = coeffs.size()
@@ -46,7 +46,7 @@ def _mix_augment_coeff(
 
 def _augment_coeff(coeffs: torch.Tensor, aug_amount: int, img_res: int):
     """
-    Augments the coeff tensor by flipping horizontal once, then seperate translate and scale `aug_amount` times.
+    Augments the coeff tensor by flipping horizontal once, then separate translations and scale `aug_amount` times.
     Input tensor needs to be of shape (images, filters, coeffs). Augmentations are random based on a normal distribution.
     First augmentation is the original images, followed by all flipped, then translated and scaled
 
@@ -56,8 +56,8 @@ def _augment_coeff(coeffs: torch.Tensor, aug_amount: int, img_res: int):
         img_res: Resolution of the images.
 
     Returns:
-        augmented: new tensor of shape (images, aug_amount ,filters, coeffs).
-        Adds a new dimention for the augmented images.
+        augmented: new tensor of shape (images, aug_amount , filters, img_res, img_res).
+        Adds a new dimension for the augmented images.
     """
     image_amount, filter_amount, _ = coeffs.size()
     augmented = coeffs.view(image_amount, 1, filter_amount, img_res, img_res)

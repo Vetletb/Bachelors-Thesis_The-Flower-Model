@@ -56,7 +56,7 @@ class CoeffPreProcessor:
         """
         Preprocesses the dataset by using a predefined filterbank.
         Saves all coefficients extracted from the dataset to disk.
-        Automatically seperates the dataset to train and test set with 80/20 split.
+        Automatically separates the dataset to train and test set with 80/20 split.
 
         Args:
             output_path: Folder for storing the coefficients, labels and classnames.
@@ -185,7 +185,7 @@ class CoeffPreProcessor:
                 # Extract sliding blocks from batched images
                 unfolded_img = self.unfold(images)
 
-                # Calculate cosine similarity between unfolded image and filters, result is extracted ceofficients
+                # Calculate cosine similarity between unfolded image and filters, result is extracted coefficients
                 coeff = _cosine_similarity(
                     self.filters_normalized, unfolded_img, self.abs_filters
                 )

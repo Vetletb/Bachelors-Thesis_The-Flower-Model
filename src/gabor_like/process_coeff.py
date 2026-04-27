@@ -5,7 +5,7 @@ from .external._gabor_like_filters import _gabor_like_filters
 from ._clustering import _spherical_kmeans
 from ._filterbank import _shift_filters
 from ._data import _save_pooled, _prepare_folder
-from ._data import PREPROCESSED_FOLDER, LABEL_RESULTS_FOLDER
+from ._data import PREPROCESSED_FOLDER
 from ._augmentation import _mix_augment_coeff
 
 SPH_KMEANS_ITERS = 25
@@ -38,7 +38,6 @@ class CoeffProcessor:
         self.f_percent = f_percent
         self.path = path
         self.coeff_path = os.path.join(path, PREPROCESSED_FOLDER)
-        self.label_path = os.path.join(path, LABEL_RESULTS_FOLDER)
         self.num_batches = len(os.listdir(self.coeff_path))
         self.img_res = img_res
         self.sigma = sigma
@@ -89,7 +88,7 @@ class CoeffProcessor:
         var_amount = aug_amount if aug_amount > 0 else 1
 
         for i in range(self.num_batches):
-            print(1)
+            print(i)
             # Load the preprocessed coeffs
             current_batch = torch.load(os.path.join(self.coeff_path, f"{i}.pt"))
             current_batch = current_batch.to(self.device)
