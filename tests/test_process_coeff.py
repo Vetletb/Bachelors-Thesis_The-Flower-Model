@@ -114,7 +114,7 @@ def test_process_correctly_max_pools_coefficients(monkeypatch):
     )
     monkeypatch.setattr(gabor_like.process_coeff, "_save_pooled", fake_save_pooled)
 
-    processor.process(1, 1, 1)
+    processor.process(1, 1, 1, 0)
 
     assert (captured["max_coeff"] == 93).any()
     assert (captured["max_coeff"] == 95).any()

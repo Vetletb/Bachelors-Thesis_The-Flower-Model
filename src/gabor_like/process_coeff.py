@@ -6,6 +6,7 @@ from ._clustering import _spherical_kmeans
 from ._filterbank import _shift_filters
 from ._data import _save_pooled, _prepare_folder
 from ._data import PREPROCESSED_FOLDER
+from ._augmentation import _mix_augment_coeff
 
 SPH_KMEANS_ITERS = 25
 
@@ -44,17 +45,26 @@ class CoeffProcessor:
         # Select device to run tensors on: CPU or CUDA
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-    def process(self, k_around_eye: int, low_freq_upper: float, high_freq_lower: float):
+    def process(
+        self,
+        k_around_eye: int,
+        low_freq_upper: float,
+        high_freq_lower: float,
+        aug_amount: int = 0,
+    ):
         """
         Max-pool coefficients from center-near clusters across frequency bands. Saves result in `path`
 
         Chooses `k_around_eye` clusters nearest image center for each band:
         low frequency, mid frequency, high frequency.
 
+        Images can be augmented be setting the `aug_amount` param
+
         Args:
             k_around_eye: Number of nearest clusters to keep per frequency band.
             low_freq_upper: Upper threshold for low-frequency centroid radius.
             high_freq_lower: Lower threshold for high-frequency centroid radius.
+            aug_amount: How many times the images gets augmented.
         """
         self.k_around_eye = k_around_eye
         self.low_freq_upper = low_freq_upper
@@ -71,23 +81,34 @@ class CoeffProcessor:
 
         pool_path = os.path.join(
             self.path,
-            f"maxpool_{self.k}_{k_around_eye}_{low_freq_upper}_{high_freq_lower}",
+            f"maxpool_{self.k}_{k_around_eye}_{low_freq_upper}_{high_freq_lower}_{aug_amount}",
         )
         _prepare_folder(pool_path)
+
+        var_amount = aug_amount if aug_amount > 0 else 1
 
         for i in range(self.num_batches):
             print(i)
             # Load the preprocessed coeffs
             current_batch = torch.load(os.path.join(self.coeff_path, f"{i}.pt"))
             current_batch = current_batch.to(self.device)
+
             # Take absolute values to account for inverse filters
             current_batch = current_batch.abs()
 
             current_batch_size = current_batch.size(dim=0)
-            current_batch = current_batch.view(current_batch_size, -1)
+
+            # Augment coefficients
+            if aug_amount > 0:
+                current_batch = _mix_augment_coeff(
+                    current_batch, aug_amount, self.img_res
+                )
+                current_batch = current_batch.view(current_batch_size, aug_amount, -1)
+            else:
+                current_batch = current_batch.view(current_batch_size, 1, -1)
 
             max_coeff = torch.empty(
-                (current_batch_size, k_around_eye * 3),
+                (current_batch_size, var_amount, k_around_eye * 3),
                 device=self.device,
             )
 
@@ -95,8 +116,8 @@ class CoeffProcessor:
             write_idx = 0
             for j in eye:
                 mask = cluster_labels_exp == j
-                coeff_in_cluster = current_batch[:, mask]
-                max_coeff[:, write_idx] = coeff_in_cluster.amax(dim=1)
+                coeff_in_cluster = current_batch[:, :, mask]
+                max_coeff[:, :, write_idx] = coeff_in_cluster.amax(dim=2)
                 write_idx += 1
                 del coeff_in_cluster
 
