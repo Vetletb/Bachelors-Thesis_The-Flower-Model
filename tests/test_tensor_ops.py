@@ -1,5 +1,5 @@
 import pytest
-import gabor_like._tensor_ops as to
+import flower_model._tensor_ops as to
 import torch
 
 

@@ -1,4 +1,4 @@
-import gabor_like._filterbank as fb
+import flower_model._filterbank as fb
 import torch
 
 
