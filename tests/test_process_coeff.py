@@ -1,5 +1,5 @@
 import pytest
-import gabor_like
+import flower_model
 import torch
 import os
 
@@ -7,7 +7,7 @@ import os
 @pytest.mark.parametrize("i", [0, 1, 2, 3, 4, 5])
 def test_cluster_sets_correct_order(i, monkeypatch):
     monkeypatch.setattr(os, "listdir", lambda path: ["a"])
-    processor = gabor_like.CoeffProcessor("path", 4, 1.0, 2, 1.0)
+    processor = flower_model.CoeffProcessor("path", 4, 1.0, 2, 1.0)
     processor.device = "cpu"
 
     processor.cluster(4)
@@ -43,7 +43,7 @@ def test_cluster_sets_correct_order(i, monkeypatch):
 
 def test_eye_labels_returns_correct_values(monkeypatch):
     monkeypatch.setattr(os, "listdir", lambda path: ["a"])
-    processor = gabor_like.CoeffProcessor("path", 4, 1.0, 4, 1.0)
+    processor = flower_model.CoeffProcessor("path", 4, 1.0, 4, 1.0)
     processor.device = "cpu"
 
     processor.img_res = 4
@@ -80,7 +80,7 @@ def test_eye_labels_returns_correct_values(monkeypatch):
 def test_process_correctly_max_pools_coefficients(monkeypatch):
     monkeypatch.setattr(os, "listdir", lambda path: ["a"])
 
-    processor = gabor_like.CoeffProcessor("path", 3, 1.0, 4, 1.0)
+    processor = flower_model.CoeffProcessor("path", 3, 1.0, 4, 1.0)
     processor.device = "cpu"
     processor.cluster_labels = torch.tensor(
         [0, 3, 2, 1, 2, 3, 2, 1, 0, 1, 4, 3, 2, 3, 4, 3, 2, 1]
@@ -93,10 +93,10 @@ def test_process_correctly_max_pools_coefficients(monkeypatch):
         captured["max_coeff"] = max_coeff
 
     monkeypatch.setattr(
-        gabor_like.CoeffProcessor, "_eye_labels", lambda self: torch.tensor([0, 2, 3])
+        flower_model.CoeffProcessor, "_eye_labels", lambda self: torch.tensor([0, 2, 3])
     )
     monkeypatch.setattr(
-        gabor_like.process_coeff, "_prepare_folder", lambda pool_path: None
+        flower_model.process_coeff, "_prepare_folder", lambda pool_path: None
     )
     monkeypatch.setattr(
         torch,
@@ -112,7 +112,7 @@ def test_process_correctly_max_pools_coefficients(monkeypatch):
             ]
         ),
     )
-    monkeypatch.setattr(gabor_like.process_coeff, "_save_pooled", fake_save_pooled)
+    monkeypatch.setattr(flower_model.process_coeff, "_save_pooled", fake_save_pooled)
 
     processor.process(1, 1, 1, 0)
 
