@@ -1,0 +1,10 @@
+dataset
+output
+__pycache__
+my_snapshot.pickle
+src/gabor_like.egg-info/dependency_links.txt
+src/gabor_like.egg-info/PKG-INFO
+src/gabor_like.egg-info/SOURCES.txt
+src/gabor_like.egg-info/top_level.txt
+.DS_Store
+.vscode/settings.json
