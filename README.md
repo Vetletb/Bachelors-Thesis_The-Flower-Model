@@ -1,11 +1,13 @@
 # The Flower model
 
 ## Overview
-This project is the code implementated for the Bachelor's thesis "Exploring Noise Robustness in Image Classification using Image Representations derived from a Shifting Focus Centre and a Predefined Filter Bank"
+This project is the code implementation for the Bachelor's Thesis "Exploring Noise Robustness in Image Classification using Image Representations derived from a Shifting Focus Centre and a Predefined Filter Bank"
 
-The source code is found in src/
+The Bachelor's Thesis can be found at this [link](https://nva.sikt.no/registration/019fdbf9bef6-46b06283-32d2-4f64-b458-521a0049c136)
 
-in additional/ more experimental code used for development and testing is found.
+The source code is found in ```src/```
+
+in ```additional/``` more experimental code used for development and testing is found.
 
 ## Table of Contents
 - [Overview](#overview)
